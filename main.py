@@ -29,17 +29,25 @@ components.html("""
         }
 
         function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);  // Set the ID of the dragged element
-            console.log("Drag started: ", ev.target.id);  // Debug: log the drag event
+            ev.dataTransfer.setData("text", ev.target.id);  // Store the ID of the dragged element
+            console.log("Drag started: ", ev.target.id);  // Debugging: log the ID of the dragged element
         }
 
         function drop(ev) {
             ev.preventDefault();
-            var data = ev.dataTransfer.getData("text");  // Get the dragged element's ID
-            console.log("Dropped: ", data);  // Debug: log the drop event
-            var draggedElement = document.getElementById(data).cloneNode(true);  // Clone the dragged element
-            draggedElement.id = data + Math.random();  // Create a unique ID for the cloned element
-            ev.target.appendChild(draggedElement);  // Append the cloned element to the drop target
+            var data = ev.dataTransfer.getData("text");  // Get the ID of the dragged element
+            console.log("Dropped: ", data);  // Debugging: log the ID of the dropped element
+
+            // Find the dragged element by its ID
+            var draggedElement = document.getElementById(data);
+            if (draggedElement) {
+                // Clone the dragged element
+                var clone = draggedElement.cloneNode(true);
+                clone.id = data + Math.random();  // Assign a new unique ID
+                ev.target.appendChild(clone);  // Append the clone to the canvas
+            } else {
+                console.log("Element not found with ID: ", data);
+            }
         }
     </script>
     """, height=500)
