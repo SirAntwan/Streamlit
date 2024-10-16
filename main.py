@@ -1,11 +1,6 @@
-import streamlit as st
-import streamlit.components.v1 as components
-import json
-
-# Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
-    <div style="display: flex; justify-content: space-between; height: 600px;">  <!-- Increased height -->
-        <div style="width: 35%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">  <!-- Increased width -->
+    <div style="display: flex; justify-content: space-between; height: 600px;">  <!-- Larger height -->
+        <div style="width: 35%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">  <!-- Larger width -->
             <h3>Available Components:</h3>
             <ul id="components" style="list-style: none; padding-left: 0;">
                 <li id="text_input" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Text Input</li>
@@ -13,9 +8,9 @@ sortable_html = """
                 <li id="slider" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Slider</li>
             </ul>
         </div>
-        <div style="width: 60%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">  <!-- Increased width -->
+        <div style="width: 60%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">  <!-- Larger canvas width -->
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px;">  <!-- Increased min-height -->
+            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px;">  <!-- Canvas height -->
             </ul>
         </div>
     </div>
@@ -30,9 +25,9 @@ sortable_html = """
             animation: 150,
             group: "shared",
             sort: false,
-            clone: true,  // Clone the item instead of moving it
             onEnd: function (evt) {
-                if (!evt.from.isEqualNode(evt.to)) {  // Only add item if moved to a different list
+                // Clone the item and place in canvas
+                if (!evt.from.isEqualNode(evt.to)) {
                     let itemId = evt.item.id;
 
                     // Create a new item element for the canvas
@@ -43,12 +38,11 @@ sortable_html = """
                     newItem.style.border = "1px solid #ccc";
                     newItem.style.marginBottom = "5px";
                     newItem.style.cursor = "grab";
-                    canvasList.appendChild(newItem);
 
-                    // Send the updated canvas order to Streamlit
-                    updateCanvas();
+                    canvasList.appendChild(newItem);
+                    updateCanvas();  // Send updated canvas back to Streamlit
                 }
-            }
+            },
         });
 
         // Make the canvas list also draggable
@@ -71,10 +65,8 @@ sortable_html = """
     </script>
 """
 
-components.html(sortable_html, height=600)
-
 # Render the drag-and-drop interface
-components.html(sortable_html, height=500)
+components.html(sortable_html, height=600)
 
 # Initialize the session state to store canvas items
 if 'canvas_items' not in st.session_state:
