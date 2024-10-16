@@ -17,7 +17,16 @@ st.subheader("Survey Canvas")
 # Add drag and drop functionality using an iframe with custom HTML
 components.html("""
     <div style="display: flex;">
-        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black;">
+        <div id="components-list" style="width: 40%; padding: 10px; border-right: 1px solid black;">
+            <h3>Components</h3>
+            <div draggable="true" ondragstart="drag(event)" id="textInput" style="margin: 10px; padding: 10px; background-color: lightgray;">
+                Text Input
+            </div>
+            <div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgray;">
+                Checkbox
+            </div>
+        </div>
+        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 60%; min-height: 400px; padding: 20px; border: 1px solid black;">
             <h3>Survey Canvas</h3>
             <p>Drop components here</p>
         </div>
