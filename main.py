@@ -1,32 +1,59 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# Initialize session state to store dropped components
-if "canvas_components" not in st.session_state:
-    st.session_state.canvas_components = []
-
-# Function to handle component drop
-def drop_component(component):
-    st.session_state.canvas_components.append(component)
+# Initialize session state for storing dropped components
+if "dropped_components" not in st.session_state:
+    st.session_state.dropped_components = []
 
 # Sidebar with draggable components
 with st.sidebar:
     st.header("Survey Components")
-    if st.button("Text Input"):
-        drop_component("Text Input")
-    if st.button("Checkbox"):
-        drop_component("Checkbox")
-    if st.button("Multiple Choice"):
-        drop_component("Multiple Choice")
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="text_input" style="margin: 10px; padding: 10px; background-color: lightblue;">Text Input</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgreen;">Checkbox</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="multiple_choice" style="margin: 10px; padding: 10px; background-color: lightcoral;">Multiple Choice</div>', unsafe_allow_html=True)
 
-# Survey canvas
+# Drop area (canvas)
 st.subheader("Survey Canvas")
-st.write("Drop components here:")
 
-# Display the dropped components in the canvas
-for component in st.session_state.canvas_components:
-    if component == "Text Input":
-        st.text_input("Sample Text Input")
-    elif component == "Checkbox":
-        st.checkbox("Sample Checkbox")
-    elif component == "Multiple Choice":
-        st.radio("Sample Multiple Choice", options=["Option 1", "Option 2", "Option 3"])
+# Render the dropped components in the Streamlit session state
+for comp in st.session_state.dropped_components:
+    if comp == "text_input":
+        st.text_input("Text Input")
+    elif comp == "checkbox":
+        st.checkbox("Checkbox")
+    elif comp == "multiple_choice":
+        st.radio("Multiple Choice", ["Option 1", "Option 2", "Option 3"])
+
+# Add custom HTML + JS to handle drag-and-drop in the frontend
+components.html(f"""
+    <div style="border: 2px solid black; min-height: 300px; padding: 10px;" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <p>Drop components here:</p>
+    </div>
+
+    <script>
+        function allowDrop(ev) {{
+            ev.preventDefault();
+        }}
+
+        function drag(ev) {{
+            ev.dataTransfer.setData("text", ev.target.id);
+        }}
+
+        function drop(ev) {{
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            // Send the dropped component to Streamlit's session state via an iframe form
+            var iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = '/?component=' + data;
+            document.body.appendChild(iframe);
+        }}
+    </script>
+""", height=350)
+
+# Parse the URL for dropped component
+query_params = st.experimental_get_query_params()
+if "component" in query_params:
+    dropped_component = query_params["component"][0]
+    if dropped_component not in st.session_state.dropped_components:
+        st.session_state.dropped_components.append(dropped_component)
