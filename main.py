@@ -1,6 +1,11 @@
+import streamlit as st
+import streamlit.components.v1 as components
+import json
+
+# Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
-    <div style="display: flex; justify-content: space-between; height: 600px;">  <!-- Larger height -->
-        <div style="width: 35%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">  <!-- Larger width -->
+    <div style="display: flex; justify-content: space-between; height: 500px;">
+        <div style="width: 35%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">
             <h3>Available Components:</h3>
             <ul id="components" style="list-style: none; padding-left: 0;">
                 <li id="text_input" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Text Input</li>
@@ -8,10 +13,9 @@ sortable_html = """
                 <li id="slider" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Slider</li>
             </ul>
         </div>
-        <div style="width: 60%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">  <!-- Larger canvas width -->
+        <div style="width: 60%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px;">  <!-- Canvas height -->
-            </ul>
+            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 300px;"></ul>
         </div>
     </div>
     
@@ -20,28 +24,25 @@ sortable_html = """
         var componentsList = document.getElementById('components');
         var canvasList = document.getElementById('canvas');
 
-        // Make the components list draggable with cloning
+        // Make the components list draggable
         new Sortable(componentsList, {
             animation: 150,
-            group: "shared",
+            group: "shared", 
             sort: false,
             onEnd: function (evt) {
-                // Clone the item and place in canvas
-                if (!evt.from.isEqualNode(evt.to)) {
-                    let itemId = evt.item.id;
-
-                    // Create a new item element for the canvas
-                    var newItem = document.createElement('li');
-                    newItem.id = itemId + '_' + Date.now();  // Unique ID for each item
-                    newItem.innerText = evt.item.innerText;
-                    newItem.style.padding = "10px";
-                    newItem.style.border = "1px solid #ccc";
-                    newItem.style.marginBottom = "5px";
-                    newItem.style.cursor = "grab";
-
-                    canvasList.appendChild(newItem);
-                    updateCanvas();  // Send updated canvas back to Streamlit
-                }
+                // Clone the dragged item
+                let itemId = evt.item.id;
+                var newItem = document.createElement('li');
+                newItem.id = itemId + '_' + Date.now();  // Unique ID for each item
+                newItem.innerText = evt.item.innerText;
+                newItem.style.padding = "10px";
+                newItem.style.border = "1px solid #ccc";
+                newItem.style.marginBottom = "5px";
+                newItem.style.cursor = "grab";
+                canvasList.appendChild(newItem);
+                
+                // Update the order and send it to Streamlit
+                updateCanvas();
             },
         });
 
@@ -54,7 +55,7 @@ sortable_html = """
             },
         });
 
-        // Function to send the canvas items back to Streamlit
+        // Function to send canvas items back to Streamlit
         function updateCanvas() {
             let order = [];
             document.querySelectorAll('#canvas li').forEach(function(el) {
@@ -65,23 +66,23 @@ sortable_html = """
     </script>
 """
 
-# Render the drag-and-drop interface
-components.html(sortable_html, height=600)
+# Render the drag-and-drop interface using components.html
+components.html(sortable_html, height=500)
 
-# Initialize the session state to store canvas items
+# Initialize session state to store canvas items
 if 'canvas_items' not in st.session_state:
     st.session_state.canvas_items = []
 
-# Function to handle messages from the drag-and-drop interface
+# Function to handle messages (check for updated canvas items)
 def handle_message():
-    message = st.experimental_get_query_params()
+    message = st.experimental_get_delta_path()
     if "canvas_order" in message:
-        st.session_state.canvas_items = json.loads(message["canvas_order"][0])  # Save the order in session_state
+        st.session_state.canvas_items = json.loads(message["canvas_order"][0])
 
-# Handle messages (to capture the drag-and-drop order)
+# Handle incoming messages
 handle_message()
 
-# Function to generate the survey based on the order in st.session_state
+# Function to generate the survey based on st.session_state
 def generate_survey():
     st.write("### Preview your survey:")
     for item in st.session_state.canvas_items:
