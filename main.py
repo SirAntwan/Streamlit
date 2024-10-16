@@ -1,58 +1,42 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Initialize session state for storing dropped components
-if "dropped_components" not in st.session_state:
-    st.session_state.dropped_components = []
+# Title of the app
+st.title("Drag-and-Drop Survey Builder")
 
-# Sidebar with draggable components
+# Sidebar with components list
 with st.sidebar:
     st.header("Survey Components")
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="text_input" style="margin: 10px; padding: 10px; background-color: lightblue;">Text Input</div>', unsafe_allow_html=True)
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgreen;">Checkbox</div>', unsafe_allow_html=True)
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="multiple_choice" style="margin: 10px; padding: 10px; background-color: lightcoral;">Multiple Choice</div>', unsafe_allow_html=True)
+    st.button("Text Input")
+    st.button("Checkbox")
+    st.button("Multiple Choice")
 
-# Drop area (canvas)
+# Survey canvas section
 st.subheader("Survey Canvas")
 
-# Render the dropped components in the Streamlit session state
-for comp in st.session_state.dropped_components:
-    if comp == "text_input":
-        st.text_input("Text Input")
-    elif comp == "checkbox":
-        st.checkbox("Checkbox")
-    elif comp == "multiple_choice":
-        st.radio("Multiple Choice", ["Option 1", "Option 2", "Option 3"])
-
-# Add custom HTML + JS to handle drag-and-drop in the frontend
-components.html(f"""
-    <div style="border: 2px solid black; min-height: 300px; padding: 10px;" ondrop="drop(event)" ondragover="allowDrop(event)">
-        <p>Drop components here:</p>
+# Add drag and drop functionality using an iframe with custom HTML
+components.html("""
+    <div style="display: flex;">
+        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black;">
+            <h3>Survey Canvas</h3>
+            <p>Drop components here</p>
+        </div>
     </div>
 
     <script>
-        function allowDrop(ev) {{
+        function allowDrop(ev) {
             ev.preventDefault();
-        }}
+        }
 
-        function drag(ev) {{
+        function drag(ev) {
             ev.dataTransfer.setData("text", ev.target.id);
-        }}
+        }
 
-        function drop(ev) {{
+        function drop(ev) {
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
-            // This is where we send the dropped component back to Streamlit
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/drop_component");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send(JSON.stringify({{ component: data }}));
-        }}
+            var nodeCopy = document.getElementById(data).cloneNode(true);
+            ev.target.appendChild(nodeCopy);
+        }
     </script>
-""", height=350)
-
-# Handle incoming dropped component
-if st.experimental_get_query_params():
-    dropped_component = st.experimental_get_query_params().get('component')
-    if dropped_component and dropped_component[0] not in st.session_state.dropped_components:
-        st.session_state.dropped_components.append(dropped_component[0])
+    """, height=500)
