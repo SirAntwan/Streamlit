@@ -17,27 +17,30 @@ st.subheader("Survey Canvas")
 # Add drag and drop functionality using an iframe with custom HTML
 components.html("""
     <div style="display: flex;">
-        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black;">
+        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black; background-color: #f9f9f9;">
             <h3>Survey Canvas</h3>
             <p>Drop components here</p>
         </div>
     </div>
 
     <script>
+        // Allow dropping by preventing default behavior
         function allowDrop(ev) {
             ev.preventDefault();
         }
 
+        // Store the dragged item's ID
         function drag(ev) {
             ev.dataTransfer.setData("text", ev.target.id);
         }
 
+        // Handle dropping the item onto the canvas
         function drop(ev) {
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
-            var nodeCopy = document.getElementById(data).cloneNode(true);
-            nodeCopy.id = data + Math.random();  // Ensure unique ID for new elements
-            ev.target.appendChild(nodeCopy);
+            var draggedElement = document.getElementById(data).cloneNode(true);
+            draggedElement.id = data + Math.random();  // Ensure unique ID for new elements
+            ev.target.appendChild(draggedElement);
         }
     </script>
     """, height=500)
