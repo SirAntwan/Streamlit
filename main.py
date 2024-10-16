@@ -4,12 +4,12 @@ import streamlit.components.v1 as components
 # Title of the app
 st.title("Drag-and-Drop Survey Builder")
 
-# Sidebar with components list
+# Sidebar with draggable components
 with st.sidebar:
     st.header("Survey Components")
-    st.button("Text Input")
-    st.button("Checkbox")
-    st.button("Multiple Choice")
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="textInput" style="margin: 10px; padding: 10px; background-color: lightgray;">Text Input</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgray;">Checkbox</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="multipleChoice" style="margin: 10px; padding: 10px; background-color: lightgray;">Multiple Choice</div>', unsafe_allow_html=True)
 
 # Survey canvas section
 st.subheader("Survey Canvas")
@@ -36,6 +36,7 @@ components.html("""
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
             var nodeCopy = document.getElementById(data).cloneNode(true);
+            nodeCopy.id = data + Math.random();  // Ensure unique ID for new elements
             ev.target.appendChild(nodeCopy);
         }
     </script>
