@@ -33,15 +33,18 @@ components.html(f"""
     <script>
         function allowDrop(ev) {{
             ev.preventDefault();
+            console.log("Allow drop event triggered");
         }}
 
         function drag(ev) {{
+            console.log("Dragging: ", ev.target.id);
             ev.dataTransfer.setData("text", ev.target.id);
         }}
 
         function drop(ev) {{
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
+            console.log("Dropped component: ", data);
             // Send the dropped component to Streamlit's session state via an iframe form
             var iframe = document.createElement('iframe');
             iframe.style.display = 'none';
