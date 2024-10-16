@@ -95,11 +95,16 @@ def handle_message():
     message = st.experimental_get_query_params()
     if "canvas_order" in message:
         new_order = json.loads(message["canvas_order"][0])
-        
-        # Ensure no duplicate components are added
-        for item in new_order:
-            if item not in st.session_state.canvas_items:
-                st.session_state.canvas_items.append(item)
+
+        # Check if the last added item is a duplicate
+        if len(new_order) > len(st.session_state.canvas_items):
+            last_item = new_order[-1]
+
+            # If the item is a duplicate, remove it
+            if last_item in st.session_state.canvas_items:
+                new_order.pop()
+
+        st.session_state.canvas_items = new_order
 
 # Handle message updates
 handle_message()
