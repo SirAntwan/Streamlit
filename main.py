@@ -7,18 +7,17 @@ st.title("Drag-and-Drop Survey Builder")
 # Sidebar with draggable components
 with st.sidebar:
     st.header("Survey Components")
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="textInput" style="margin: 10px; padding: 10px; background-color: lightgray; border-radius: 5px;">Text Input</div>', unsafe_allow_html=True)
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgray; border-radius: 5px;">Checkbox</div>', unsafe_allow_html=True)
-    st.markdown('<div draggable="true" ondragstart="drag(event)" id="multipleChoice" style="margin: 10px; padding: 10px; background-color: lightgray; border-radius: 5px;">Multiple Choice</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="textInput" style="margin: 10px; padding: 10px; background-color: lightgray;">Text Input</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="checkbox" style="margin: 10px; padding: 10px; background-color: lightgray;">Checkbox</div>', unsafe_allow_html=True)
+    st.markdown('<div draggable="true" ondragstart="drag(event)" id="multipleChoice" style="margin: 10px; padding: 10px; background-color: lightgray;">Multiple Choice</div>', unsafe_allow_html=True)
 
 # Survey canvas section
 st.subheader("Survey Canvas")
 
-# Add drag and drop functionality using an iframe with custom HTML and JavaScript
+# Add drag and drop functionality using an iframe with custom HTML
 components.html("""
     <div style="display: flex;">
-        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" 
-             style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black; background-color: #f9f9f9;">
+        <div id="survey-canvas" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100%; min-height: 400px; padding: 20px; border: 1px solid black; background-color: #f9f9f9;">
             <h3>Survey Canvas</h3>
             <p>Drop components here</p>
         </div>
@@ -26,20 +25,21 @@ components.html("""
 
     <script>
         function allowDrop(ev) {
-            ev.preventDefault();  // Necessary to allow drops
+            ev.preventDefault();  // Allows dropping by preventing default behavior
         }
 
         function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);  // Pass the component ID
+            ev.dataTransfer.setData("text", ev.target.id);  // Set the ID of the dragged element
+            console.log("Drag started: ", ev.target.id);  // Debug: log the drag event
         }
 
         function drop(ev) {
-            ev.preventDefault();  // Necessary to handle drop
+            ev.preventDefault();
             var data = ev.dataTransfer.getData("text");  // Get the dragged element's ID
-            var nodeCopy = document.getElementById(data).cloneNode(true);  // Clone the dragged element
-            nodeCopy.id = data + Math.random();  // Assign a unique ID to prevent duplicates
-            nodeCopy.style.margin = "10px";  // Adjust margins for dropped elements
-            ev.target.appendChild(nodeCopy);  // Append the cloned element to the canvas
+            console.log("Dropped: ", data);  // Debug: log the drop event
+            var draggedElement = document.getElementById(data).cloneNode(true);  // Clone the dragged element
+            draggedElement.id = data + Math.random();  // Create a unique ID for the cloned element
+            ev.target.appendChild(draggedElement);  // Append the cloned element to the drop target
         }
     </script>
     """, height=500)
