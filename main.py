@@ -86,7 +86,7 @@ sortable_html = """
 # Render the drag-and-drop interface
 components.html(sortable_html, height=500)
 
-# Initialize session state for the canvas items
+# Initialize session state for the canvas items if not already initialized
 if 'canvas_items' not in st.session_state:
     st.session_state.canvas_items = ['text_input', 'radio', 'slider']  # Start with initial canvas components
 
@@ -94,7 +94,12 @@ if 'canvas_items' not in st.session_state:
 def handle_message():
     message = st.experimental_get_query_params()
     if "canvas_order" in message:
-        st.session_state.canvas_items = json.loads(message["canvas_order"][0])
+        new_order = json.loads(message["canvas_order"][0])
+        
+        # Ensure no duplicate components are added
+        for item in new_order:
+            if item not in st.session_state.canvas_items:
+                st.session_state.canvas_items.append(item)
 
 # Handle message updates
 handle_message()
