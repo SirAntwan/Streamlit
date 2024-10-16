@@ -56,6 +56,13 @@ sortable_html = """
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
                 newItem.style.cursor = "grab";
+
+                // Remove the last component before appending a new one
+                if (canvasList.lastChild) {
+                    canvasList.removeChild(canvasList.lastChild);
+                }
+
+                // Add the new item
                 canvasList.appendChild(newItem);
 
                 // Send the updated canvas order to Streamlit
@@ -96,14 +103,7 @@ def handle_message():
     if "canvas_order" in message:
         new_order = json.loads(message["canvas_order"][0])
 
-        # Check if the last added item is a duplicate
-        if len(new_order) > len(st.session_state.canvas_items):
-            last_item = new_order[-1]
-
-            # If the item is a duplicate, remove it
-            if last_item in st.session_state.canvas_items:
-                new_order.pop()
-
+        # Update canvas items in session state
         st.session_state.canvas_items = new_order
 
 # Handle message updates
