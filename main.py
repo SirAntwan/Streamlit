@@ -4,8 +4,8 @@ import json
 
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
-    <div style="display: flex; justify-content: space-between; height: 400px;">
-        <div style="width: 30%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">
+    <div style="display: flex; justify-content: space-between; height: 600px;">  <!-- Increased height -->
+        <div style="width: 35%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">  <!-- Increased width -->
             <h3>Available Components:</h3>
             <ul id="components" style="list-style: none; padding-left: 0;">
                 <li id="text_input" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Text Input</li>
@@ -13,9 +13,9 @@ sortable_html = """
                 <li id="slider" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: grab;">Slider</li>
             </ul>
         </div>
-        <div style="width: 65%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">
+        <div style="width: 60%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">  <!-- Increased width -->
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 300px;">
+            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px;">  <!-- Increased min-height -->
             </ul>
         </div>
     </div>
@@ -25,27 +25,30 @@ sortable_html = """
         var componentsList = document.getElementById('components');
         var canvasList = document.getElementById('canvas');
 
-        // Make the components list draggable
+        // Make the components list draggable with cloning
         new Sortable(componentsList, {
             animation: 150,
-            group: "shared", // Use the same group for both lists
-            sort: false, // Disable sorting in this list
+            group: "shared",
+            sort: false,
+            clone: true,  // Clone the item instead of moving it
             onEnd: function (evt) {
-                let itemId = evt.item.id;
+                if (!evt.from.isEqualNode(evt.to)) {  // Only add item if moved to a different list
+                    let itemId = evt.item.id;
 
-                // Create a new item element for the canvas
-                var newItem = document.createElement('li');
-                newItem.id = itemId + '_' + Date.now(); // Unique ID for each item
-                newItem.innerText = evt.item.innerText;
-                newItem.style.padding = "10px";
-                newItem.style.border = "1px solid #ccc";
-                newItem.style.marginBottom = "5px";
-                newItem.style.cursor = "grab";
-                canvasList.appendChild(newItem);
-                
-                // Send the updated canvas order to Streamlit
-                updateCanvas();
-            },
+                    // Create a new item element for the canvas
+                    var newItem = document.createElement('li');
+                    newItem.id = itemId + '_' + Date.now();  // Unique ID for each item
+                    newItem.innerText = evt.item.innerText;
+                    newItem.style.padding = "10px";
+                    newItem.style.border = "1px solid #ccc";
+                    newItem.style.marginBottom = "5px";
+                    newItem.style.cursor = "grab";
+                    canvasList.appendChild(newItem);
+
+                    // Send the updated canvas order to Streamlit
+                    updateCanvas();
+                }
+            }
         });
 
         // Make the canvas list also draggable
@@ -67,6 +70,8 @@ sortable_html = """
         }
     </script>
 """
+
+components.html(sortable_html, height=600)
 
 # Render the drag-and-drop interface
 components.html(sortable_html, height=500)
