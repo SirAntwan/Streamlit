@@ -57,13 +57,14 @@ sortable_html = """
                 newItem.style.marginBottom = "5px";
                 newItem.style.cursor = "grab";
 
-                // Remove the last component before appending a new one
-                if (canvasList.lastChild) {
-                    canvasList.removeChild(canvasList.lastChild);
-                }
+                // Remove the last component before appending a new on
 
                 // Add the new item
                 canvasList.appendChild(newItem);
+
+                if (canvasList.lastChild) {
+                    canvasList.removeChild(canvasList.lastChild);
+                }
 
                 // Send the updated canvas order to Streamlit
                 updateCanvas();
