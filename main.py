@@ -33,30 +33,26 @@ components.html(f"""
     <script>
         function allowDrop(ev) {{
             ev.preventDefault();
-            console.log("Allow drop event triggered");
         }}
 
         function drag(ev) {{
-            console.log("Dragging: ", ev.target.id);
             ev.dataTransfer.setData("text", ev.target.id);
         }}
 
         function drop(ev) {{
             ev.preventDefault();
             var data = ev.dataTransfer.getData("text");
-            console.log("Dropped component: ", data);
-            // Send the dropped component to Streamlit's session state via an iframe form
-            var iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = '/?component=' + data;
-            document.body.appendChild(iframe);
+            // This is where we send the dropped component back to Streamlit
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/drop_component");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify({{ component: data }}));
         }}
     </script>
 """, height=350)
 
-# Parse the URL for dropped component
-query_params = st.experimental_get_query_params()
-if "component" in query_params:
-    dropped_component = query_params["component"][0]
-    if dropped_component not in st.session_state.dropped_components:
-        st.session_state.dropped_components.append(dropped_component)
+# Handle incoming dropped component
+if st.experimental_get_query_params():
+    dropped_component = st.experimental_get_query_params().get('component')
+    if dropped_component and dropped_component[0] not in st.session_state.dropped_components:
+        st.session_state.dropped_components.append(dropped_component[0])
