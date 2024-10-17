@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
 import json
-import web3
 
 # Global variables
 total_number_pages = 24
 placeholder_buttons = None
+
+st.set_page_config(page_title="Example Survey",)
 
 # Radio Options
 q1_radio_options         = ["Weekly", "Monthly", "Semi-annually", "Annually", "Less than Annually", "Never"]
@@ -23,7 +24,6 @@ def button_disable():
     st.session_state["disabled"] = True
 
 # Changing the App title
-st.set_page_config(page_title="Example Survey",)
 
 # Page title
 st.title('Patient Consent for HIE')
@@ -239,44 +239,9 @@ elif st.session_state["current_page"]  == 6:
     # Progress bar
     st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
 
-# Page 7; Q6
-elif st.session_state["current_page"]  == 7:
-
-    st.radio(label     = "How important is it that your healthcare providers have access to ALL of your medical information to make care decisions?",
-             options   = importance_radio_options, 
-             index     = None if st.session_state["Q6"] == None else st.session_state["Q6"],
-             key       = 'Q6_radio', 
-             on_change = radio_change, 
-             args      = (importance_radio_options, "Q6", "Q6_radio",))
-    
-    # The code below changes the font size of the above radio's label. The last two <br> tags create extra space before the buttons
-    st.markdown("""<style> div[class*="stRadio"] > label > div[data-testid="stMarkdownContainer"] > p {font-size: 24px;}</style> <br><br>""", unsafe_allow_html=True)
-
-    # Placeholder for a potential warning message    
-    placeholder = st.empty()
-
-    # Back/Next buttons
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button('Back'):
-            st.session_state["current_page"] -= 1
-            st.rerun()
-
-    with col2:
-        if st.button('Next'):
-            if st.session_state["Q6"] != None:
-                st.session_state["current_page"] += 1
-                st.rerun()
-            else: # Adding warning message to the placeholder
-                with placeholder.container():
-                    st.warning(f"Please answer all the questions on this page.", icon="⚠️")
-
-    # Progress bar
-    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
-
 
 # Page 24
-elif st.session_state["current_page"]  == 24:
+elif st.session_state["current_page"]  == 7:
    
     st.markdown('<p class="big-font">Thank you for participating! <br> Click on the button below to submit your answers. </p>', unsafe_allow_html=True)
 
