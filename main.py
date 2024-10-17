@@ -9,10 +9,8 @@ st.set_page_config(layout="wide")
 survey_title = st.text_input("Survey Title", "Your Survey Title")
 survey_description = st.text_area("Survey Description", "Enter a description for your survey here...")
 
-count = 0
-
 # Define the HTML and JavaScript for the drag-and-drop interface
-sortable_html = """
+sortable_html = f"""
     <style>
         body {{
             margin: 0;
@@ -146,7 +144,6 @@ sortable_html = """
                 }});
 
                 if (newItem.id.startsWith('text_input')) {{
-                    """+count = count + 1+"""
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
@@ -155,7 +152,6 @@ sortable_html = """
                 }}
 
                 if (newItem.id.startsWith('radio')) {{
-                    """+count = count + 1+"""
                     var optionCount = 2;
                     function createOptionBox(optionNumber) {{
                         var optionContainer = document.createElement('div');
@@ -209,7 +205,6 @@ sortable_html = """
                 }}
 
                 if (newItem.id.startsWith('slider')) {{
-                    """+count = count + 1+"""
                     var sliderQuestionBox = document.createElement('input');
                     sliderQuestionBox.type = 'text';
                     sliderQuestionBox.placeholder = 'Type your slider question...';
@@ -256,7 +251,6 @@ components.html(sortable_html, height=1000)
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
-
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
     message = st.experimental_get_query_params().get('message', None)
@@ -271,20 +265,20 @@ handle_message()
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
     # Generate Python code based on `st.session_state.survey_structure`
-    total_number_pages = len(st.session_state.survey_structure) + 1
+    total_number_pages = len(st.session_state.survey_structure)  # Updated to reflect correct length
     generated_code = f"""
 import streamlit as st
 import requests
 import json
 
 
-total_number_pages = {total_number_pages}
+total_number_pages = {total_number_pages}  # Total number of survey components
 placeholder_buttons = None
 
 
 # Function that records radio element changes 
 def radio_change(element, state, key):
-    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
+    st.session_state[state] = element.index(st.session_state[key])  # Setting previously selected option
 
 # Function that disables the last button while data is uploaded to IPFS 
 def button_disable():
@@ -297,9 +291,7 @@ st.set_page_config(page_title="IPFS-Based Survey")
 st.title("{survey_title}")
 st.write("{survey_description}")
 
-            """
+    """
 
     # Display the generated code
     st.code(generated_code, language="python")
-
-
