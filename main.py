@@ -9,7 +9,7 @@ sortable_html = """
         <div style="width: 45%; border-right: 1px solid #ccc; padding-right: 10px;">
             <h3>Drag and Drop Survey Elements:</h3>
             <ul id="items" style="list-style: none; padding-left: 0;">
-                <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Input</li>
+                <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
                 <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
                 <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
             </ul>
@@ -59,7 +59,6 @@ sortable_html = """
                 // Add a text box for the Text Input component
                 if (newItem.id.startsWith('text_input')) {
                     var inputLabel = document.createElement('label');
-                    inputLabel.innerText = 'Question:';
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
