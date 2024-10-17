@@ -1,49 +1,115 @@
 import streamlit as st
+import json
+import requests
+import web3
 
-# Placeholder to store created survey components
-if "survey" not in st.session_state:
-    st.session_state.survey = []
+# Global variables
+total_number_pages = 24
+placeholder_buttons = None
 
-# Function to add a question to the survey
-def add_question(question_type, question_text, options=None):
-    question = {"type": question_type, "text": question_text, "options": options}
-    st.session_state.survey.append(question)
+# Radio Options
+q1_radio_options = ["Weekly", "Monthly", "Semi-annually", "Annually", "Less than Annually", "Never"]
+yes_no_NotSure_radio_options = ["Yes", "No", "Not sure"]
+yes_no_radio_options = ["Yes", "No"]
+frequency_radio_options = ["Always", "Most of the time", "About half the time", "Sometimes", "Never"]
 
-# Display UI to add questions
-st.title("Drag and Drop Survey Builder")
+# Function to initialize session state for the survey
+def initialize_survey():
+    if "current_page" not in st.session_state:
+        st.session_state["current_page"] = 1
+        st.session_state["Q1"] = None
+        st.session_state["Q2"] = None
+        st.session_state["Q3"] = None
+        st.session_state["Q4"] = None
+        st.session_state["Q5"] = None
+        st.session_state["survey_loaded"] = False
+        st.session_state["disabled"] = False
 
-question_text = st.text_input("Enter question text:")
-question_type = st.selectbox("Select question type", ["Radio", "Checkbox", "Text"])
+# Function to import and load an existing survey
+def import_survey(uploaded_file):
+    try:
+        data = json.load(uploaded_file)
+        st.session_state["survey_loaded"] = True
+        st.session_state.update(data)  # Load the survey data into session state
+        st.success("Survey successfully loaded!")
+    except Exception as e:
+        st.error(f"Failed to load survey: {e}")
 
-if question_type in ["Radio", "Checkbox"]:
-    options = st.text_area("Enter options (comma-separated)").split(",")
-    if st.button("Add Question"):
-        add_question(question_type, question_text, options)
-else:
-    if st.button("Add Question"):
-        add_question(question_type, question_text)
+# Function to export the current survey to a JSON file
+def export_survey():
+    survey_data = {
+        "Q1": st.session_state.get("Q1"),
+        "Q2": st.session_state.get("Q2"),
+        "Q3": st.session_state.get("Q3"),
+        "Q4": st.session_state.get("Q4"),
+        "Q5": st.session_state.get("Q5")
+    }
+    return json.dumps(survey_data, indent=4)
 
-# Display created questions
-if st.session_state.survey:
-    st.write("Current Survey:")
-    for i, question in enumerate(st.session_state.survey):
-        st.write(f"Q{i+1}: {question['text']} ({question['type']})")
+# Function that records radio element changes 
+def radio_change(element, state, key):
+    st.session_state[state] = element.index(st.session_state[key])
 
+# Page title and Upload section
+st.set_page_config(page_title="Survey Import & Edit Example",)
 
-def generate_python_code(survey):
-    python_code = "import streamlit as st\n\n"
-    python_code += "st.title('Generated Survey')\n\n"
-    
-    for i, question in enumerate(survey):
-        if question['type'] == 'Radio':
-            python_code += f"st.radio('{question['text']}', {question['options']})\n\n"
-        elif question['type'] == 'Checkbox':
-            python_code += f"st.checkbox('{question['text']}', {question['options']})\n\n"
-        elif question['type'] == 'Text':
-            python_code += f"st.text_input('{question['text']}')\n\n"
-    
-    return python_code
+st.title("Survey Import & Edit Example")
+st.markdown("<style>.big-font {font-size:24px;}</style>", unsafe_allow_html=True)
 
-if st.button("Generate Python Code"):
-    code = generate_python_code(st.session_state.survey)
-    st.code(code, language='python')
+# Initialize survey state
+initialize_survey()
+
+# File uploader to import existing surveys
+uploaded_file = st.file_uploader("Upload a survey (JSON format)", type="json")
+if uploaded_file:
+    import_survey(uploaded_file)
+
+# Export button to download the current survey as a JSON file
+if st.session_state["survey_loaded"]:
+    export_data = export_survey()
+    st.download_button(label="Export Survey", data=export_data, file_name="exported_survey.json", mime="application/json")
+
+# Progress bar and navigation for existing surveys
+if st.session_state["survey_loaded"]:
+
+    # Page 1: Display introduction
+    if st.session_state["current_page"] == 1:
+        st.markdown('<p class="big-font">Welcome to the survey editing interface!</p>', unsafe_allow_html=True)
+
+        if st.button("Next"):
+            st.session_state["current_page"] += 1
+            st.rerun()
+
+    # Page 2: Edit Question 1
+    elif st.session_state["current_page"] == 2:
+        st.radio(label="How frequently do you visit a healthcare provider to receive care for a medical problem?", 
+                 options=q1_radio_options, 
+                 index=st.session_state.get("Q1", None),
+                 key='Q1_radio', 
+                 on_change=radio_change, 
+                 args=(q1_radio_options, "Q1", "Q1_radio",))
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Back"):
+                st.session_state["current_page"] -= 1
+                st.rerun()
+        with col2:
+            if st.button("Next"):
+                if st.session_state["Q1"] is not None:
+                    st.session_state["current_page"] += 1
+                    st.rerun()
+                else:
+                    st.warning("Please answer this question")
+
+    # Add similar editing logic for other questions in subsequent pages.
+    # After reaching the last page, allow submission of the survey for storage.
+
+    # Page 24: Submission page
+    if st.session_state["current_page"] == 24:
+        st.markdown('<p class="big-font">Thank you for editing the survey! Click to submit your responses.</p>', unsafe_allow_html=True)
+        if st.button("Submit Responses"):
+            st.success("Responses submitted successfully!")
+
+    st.progress(st.session_state["current_page"] / total_number_pages)
+
