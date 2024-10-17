@@ -2,14 +2,40 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 
-# Set the page to wide mode to ensure full width of the screen is used
+# Set page to wide mode
 st.set_page_config(layout="wide")
 
-# Text input for survey title and description
-survey_title = st.text_input("Survey Title", "Your Survey Title")
-survey_description = st.text_area("Survey Description", "Enter a description for your survey here...")
+# Initialize the session state to track survey structure and component count
+if 'survey_structure' not in st.session_state:
+    st.session_state['survey_structure'] = []
 
-# Define the HTML and JavaScript for the drag-and-drop interface
+if 'component_count' not in st.session_state:
+    st.session_state['component_count'] = 0
+
+# Function to update survey structure when a component is added or removed
+def update_survey_structure(component_type, action='add', component_id=None):
+    if action == 'add':
+        st.session_state['component_count'] += 1
+        new_component = {
+            'id': st.session_state['component_count'],
+            'type': component_type,
+            'question': ''
+        }
+        if component_type == 'radio':
+            new_component['options'] = ['Option 1', 'Option 2']
+        elif component_type == 'slider':
+            new_component['min'] = 0
+            new_component['max'] = 100
+            new_component['min_label'] = 'Min'
+            new_component['max_label'] = 'Max'
+        
+        st.session_state['survey_structure'].append(new_component)
+    elif action == 'remove' and component_id is not None:
+        st.session_state['survey_structure'] = [
+            comp for comp in st.session_state['survey_structure'] if comp['id'] != component_id
+        ]
+
+# JavaScript and HTML for drag-and-drop interface
 sortable_html = f"""
     <style>
         body {{
@@ -28,7 +54,7 @@ sortable_html = f"""
             overflow-y: auto;
         }}
         .right-column {{
-            margin-left: 20%;  
+            margin-left: 20%;
             padding-left: 20px;
         }}
         #canvas {{
@@ -119,37 +145,15 @@ sortable_html = f"""
             }},
         }});
 
-        // Function to update survey structure in the backend
+        // Function to update the survey structure in the backend
         function updateSurveyStructure() {{
-            var structure = [];
             var canvasItems = canvasEl.children;
+            var structure = [];
             for (var i = 0; i < canvasItems.length; i++) {{
                 var item = canvasItems[i];
                 var componentType = item.id.split('_')[0];
-                
-                var component = {{
-                    type: componentType
-                }};
-                
-                if (componentType === 'text_input') {{
-                    component.question = item.querySelector('input').value;
-                }}
-                if (componentType === 'radio') {{
-                    component.question = item.querySelector('input').value;
-                    var options = item.querySelectorAll('.input-box');
-                    component.options = Array.from(options).map(opt => opt.value);
-                }}
-                if (componentType === 'slider') {{
-                    component.question = item.querySelector('input[type="text"]').value;
-                    component.min_label = item.querySelector('input[placeholder="Min Label"]').value;
-                    component.max_label = item.querySelector('input[placeholder="Max Label"]').value;
-                    component.min_value = item.querySelector('input[type="number"][placeholder="Min Value (Default 0)"]').value || 0;
-                    component.max_value = item.querySelector('input[type="number"][placeholder="Max Value (Default 100)"]').value || 100;
-                }}
-                structure.push(component);
+                structure.push(componentType);
             }}
-            
-            // Send the updated structure to the backend
             var message = encodeURIComponent(JSON.stringify(structure));
             window.location.href = "?message=" + message;
         }}
@@ -165,12 +169,11 @@ sortable_html = f"""
             onAdd: function (evt) {{
                 var newItem = evt.item;
                 newItem.id = evt.item.id + '_' + Date.now(); // Unique ID
-
                 newItem.style.padding = "10px";
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
                 newItem.classList.add('component-container');
-
+                
                 var removeComponentButton = document.createElement('button');
                 removeComponentButton.textContent = 'X';
                 removeComponentButton.classList.add('remove-component-btn');
@@ -188,58 +191,21 @@ sortable_html = f"""
                 }}
 
                 if (newItem.id.startsWith('radio')) {{
-                    var optionCount = 2;
-                    function createOptionBox(optionNumber) {{
-                        var optionContainer = document.createElement('div');
-                        optionContainer.style.display = 'flex';
-                        optionContainer.style.alignItems = 'center';
-
-                        var newOptionBox = document.createElement('input');
-                        newOptionBox.type = 'text';
-                        newOptionBox.placeholder = 'Option ' + optionNumber;
-                        newOptionBox.classList.add('input-box');
-
-                        var removeButton = document.createElement('button');
-                        removeButton.textContent = 'Remove';
-                        removeButton.classList.add('remove-option-btn');
-                        removeButton.style.marginLeft = '10px';
-                        removeButton.addEventListener('click', function () {{
-                            optionsContainer.removeChild(optionContainer);
-                            optionCount -= 1;
-                            updateSurveyStructure();
-                        }});
-
-                        optionContainer.appendChild(newOptionBox);
-                        optionContainer.appendChild(removeButton);
-
-                        return optionContainer;
-                    }}
-
                     var questionBox = document.createElement('input');
                     questionBox.type = 'text';
                     questionBox.placeholder = 'Type your multiple choice question...';
                     questionBox.classList.add('input-box');
 
                     var optionsContainer = document.createElement('div');
-                    var option1Container = createOptionBox(1);
-                    var option2Container = createOptionBox(2);
-                    optionsContainer.appendChild(option1Container);
-                    optionsContainer.appendChild(option2Container);
-
-                    var addButton = document.createElement('button');
-                    addButton.textContent = 'Add Option';
-                    addButton.classList.add('add-option-btn');
-
+                    for (var i = 1; i <= 2; i++) {{
+                        var optionBox = document.createElement('input');
+                        optionBox.type = 'text';
+                        optionBox.placeholder = 'Option ' + i;
+                        optionBox.classList.add('input-box');
+                        optionsContainer.appendChild(optionBox);
+                    }}
                     newItem.appendChild(questionBox);
                     newItem.appendChild(optionsContainer);
-                    newItem.appendChild(addButton);
-
-                    addButton.addEventListener('click', function () {{
-                        optionCount += 1;
-                        var newOptionContainer = createOptionBox(optionCount);
-                        optionsContainer.appendChild(newOptionContainer);
-                        updateSurveyStructure();
-                    }});
                 }}
 
                 if (newItem.id.startsWith('slider')) {{
@@ -291,7 +257,7 @@ sortable_html = f"""
 # Display the drag-and-drop interface in the Streamlit app
 components.html(sortable_html, height=600)
 
-# Check for survey structure updates from the front-end
+# Process survey structure updates from the front-end
 if 'message' in st.experimental_get_query_params():
     survey_structure_json = st.experimental_get_query_params()['message'][0]
     st.session_state['survey_structure'] = json.loads(survey_structure_json)
