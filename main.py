@@ -87,6 +87,7 @@ sortable_html = """
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
 
+                // Add a text box for the Text Question component
                 if (newItem.id.startsWith('text_input')) {
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
@@ -96,20 +97,40 @@ sortable_html = """
                     newItem.appendChild(inputBox);
                 }
 
-                updateCanvasHeight();
+                // Add functionality for the Multiple Choice (Radio) component
+                if (newItem.id.startsWith('radio')) {
+                    // Add a text box for the question
+                    var questionBox = document.createElement('input');
+                    questionBox.type = 'text';
+                    questionBox.placeholder = 'Type your multiple choice question...';
+                    questionBox.style.display = 'block';
+                    questionBox.style.marginTop = '5px';
+
+                    // Add two text boxes for the options
+                    var option1Box = document.createElement('input');
+                    option1Box.type = 'text';
+                    option1Box.placeholder = 'Option 1';
+                    option1Box.style.display = 'block';
+                    option1Box.style.marginTop = '5px';
+
+                    var option2Box = document.createElement('input');
+                    option2Box.type = 'text';
+                    option2Box.placeholder = 'Option 2';
+                    option2Box.style.display = 'block';
+                    option2Box.style.marginTop = '5px';
+
+                    // Append the question box and option boxes to the new item
+                    newItem.appendChild(questionBox);
+                    newItem.appendChild(option1Box);
+                    newItem.appendChild(option2Box);
+                }
+
                 updateCanvas();
             },
             onEnd: function () {
-                updateCanvasHeight();
                 updateCanvas();
             },
         });
-
-        // Adjust canvas height dynamically based on content
-        function updateCanvasHeight() {
-            var canvasHeight = canvasEl.scrollHeight;
-            window.parent.postMessage({height: canvasHeight}, "*");
-        }
 
         // Send the canvas items back to Streamlit
         function updateCanvas() {
@@ -122,24 +143,22 @@ sortable_html = """
         }
 
         window.addEventListener('load', function() {
-            updateCanvasHeight();
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
         });
     </script>
 """
 
-# Set an initial default height
-if 'canvas_height' not in st.session_state:
-    st.session_state.canvas_height = 1000
-
 # Render the HTML/JS interface
-components.html(sortable_html, height=st.session_state.canvas_height)
+components.html(sortable_html, height=1000)
+
+# Initialize the session state to store the survey structure if not present
+if 'survey_structure' not in st.session_state:
+    st.session_state.survey_structure = []
 
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
-    message = st.experimental_get_query_params().get("height")
+    message = st.experimental_get_query_params().get("canvas_order")
     if message:
-        # Adjust the height in session_state and trigger a rerun
-        st.session_state.canvas_height = int(message[0])
-        st.experimental_rerun()
+        st.session_state.survey_structure = json.loads(message[0])
 
 handle_message()
