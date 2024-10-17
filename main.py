@@ -266,31 +266,40 @@ handle_message()
 if st.button("Generate Survey Code"):
     # Generate Python code based on `st.session_state.survey_structure`
     total_number_pages = len(st.session_state.survey_structure) + 1
-    generated_code = ""
-    # Add the initial imports and global variables
-    generated_code += """import streamlit as st
+    generated_code = f"""
+import streamlit as st
 import requests
 import json
 
-# Global variables
-total_number_pages = {total_number_pages}
-placeholder_buttons = None
+# Survey title and description
+st.title("{survey_title}")
+st.write("{survey_description}")
 
-""".format(total_number_pages)
+# Initialize session state for responses
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = 1
 
-    generated_code += """
+    """
 
-# Function that records radio element changes 
-def radio_change(element, state, key):
-    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
+    for idx, component in enumerate(st.session_state.survey_structure):
+        if component["type"] == "text_input":
+            generated_code += f"""
+# Page {idx + 1} - Text Input
+if st.session_state["current_page"] == {idx + 1}:
+    st.text_input("{component['question']}")
+            """
+        elif component["type"] == "radio":
+            generated_code += f"""
+# Page {idx + 1} - Multiple Choice
+if st.session_state["current_page"] == {idx + 1}:
+    st.radio("{component['question']}", options={component['options']})
+            """
+        elif component["type"] == "slider":
+            generated_code += f"""
+# Page {idx + 1} - Slider
+if st.session_state["current_page"] == {idx + 1}:
+    st.slider("{component['question']}", min_value={component['min_value']}, max_value={component['max_value']})
+            """
 
-# Function that disables the last button while data is uploaded to IPFS 
-def button_disable():
-    st.session_state["disabled"] = True
-
-# Changing the App title
-st.set_page_config(page_title="IPFS-Based Survey")
-
-# Page title
-st.title("GET TITLE FROM NEW TEXT BOX")"""
+    # Display the generated code
     st.code(generated_code, language="python")
