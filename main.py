@@ -81,18 +81,7 @@ sortable_html = """
         var itemsEl = document.getElementById('items');
         var canvasEl = document.getElementById('canvas');
 
-        // Counter to keep track of the number of options
-        let optionCount = 2;
-
-        // Add event listener to the button to add new options dynamically
-        addButton.addEventListener('click', function () {
-            optionCount += 1;
-            var newOptionBox = document.createElement('input');
-            newOptionBox.type = 'text';
-            newOptionBox.placeholder = 'Option ' + optionCount;  // Dynamic numbering
-            newOptionBox.classList.add('input-box');
-            optionsContainer.appendChild(newOptionBox);
-        });
+        
 
         
 
@@ -167,11 +156,15 @@ sortable_html = """
                     newItem.appendChild(optionsContainer);
                     newItem.appendChild(addButton);
 
+                    // Counter to keep track of the number of options
+                    let optionCount = 2;
+
                     // Add event listener to the button to add new options dynamically
                     addButton.addEventListener('click', function () {
+                        optionCount += 1;
                         var newOptionBox = document.createElement('input');
                         newOptionBox.type = 'text';
-                        newOptionBox.placeholder = 'Option' + optionCount;
+                        newOptionBox.placeholder = 'Option ' + optionCount;  // Dynamic numbering
                         newOptionBox.classList.add('input-box');
                         optionsContainer.appendChild(newOptionBox);
                     });
