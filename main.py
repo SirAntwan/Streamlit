@@ -36,6 +36,28 @@ sortable_html = """
             min-height: 200px;
             transition: all 0.3s ease;
         }
+
+        /* Increase the width of text boxes */
+        .input-box {
+            width: 80%;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .add-option-btn {
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .add-option-btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 
     <div>
@@ -92,8 +114,7 @@ sortable_html = """
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
-                    inputBox.style.display = 'block';
-                    inputBox.style.marginTop = '5px';
+                    inputBox.classList.add('input-box');
                     newItem.appendChild(inputBox);
                 }
 
@@ -103,26 +124,42 @@ sortable_html = """
                     var questionBox = document.createElement('input');
                     questionBox.type = 'text';
                     questionBox.placeholder = 'Type your multiple choice question...';
-                    questionBox.style.display = 'block';
-                    questionBox.style.marginTop = '5px';
+                    questionBox.classList.add('input-box');
 
-                    // Add two text boxes for the options
+                    // Add two text boxes for the initial options
                     var option1Box = document.createElement('input');
                     option1Box.type = 'text';
                     option1Box.placeholder = 'Option 1';
-                    option1Box.style.display = 'block';
-                    option1Box.style.marginTop = '5px';
+                    option1Box.classList.add('input-box');
 
                     var option2Box = document.createElement('input');
                     option2Box.type = 'text';
                     option2Box.placeholder = 'Option 2';
-                    option2Box.style.display = 'block';
-                    option2Box.style.marginTop = '5px';
+                    option2Box.classList.add('input-box');
 
-                    // Append the question box and option boxes to the new item
+                    // Add a button to add more options dynamically
+                    var addButton = document.createElement('button');
+                    addButton.textContent = 'Add Option';
+                    addButton.classList.add('add-option-btn');
+                    
+                    // Container for options
+                    var optionsContainer = document.createElement('div');
+                    optionsContainer.appendChild(option1Box);
+                    optionsContainer.appendChild(option2Box);
+
+                    // Append the question box and options container to the new item
                     newItem.appendChild(questionBox);
-                    newItem.appendChild(option1Box);
-                    newItem.appendChild(option2Box);
+                    newItem.appendChild(optionsContainer);
+                    newItem.appendChild(addButton);
+
+                    // Add event listener to the button to add new options dynamically
+                    addButton.addEventListener('click', function () {
+                        var newOptionBox = document.createElement('input');
+                        newOptionBox.type = 'text';
+                        newOptionBox.placeholder = 'New Option';
+                        newOptionBox.classList.add('input-box');
+                        optionsContainer.appendChild(newOptionBox);
+                    });
                 }
 
                 updateCanvas();
