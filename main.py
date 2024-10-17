@@ -28,9 +28,10 @@ sortable_html = """
         var itemsEl = document.getElementById('items');
         var canvasEl = document.getElementById('canvas');
 
-        // Make the components list draggable
+        // Make the components list draggable but not sortable
         new Sortable(itemsEl, {
             animation: 150,
+            sort: false,  // Disable sorting in the components list
             onEnd: function (evt) {
                 // Create a new item element for the canvas
                 var newItem = document.createElement('li');
@@ -46,7 +47,7 @@ sortable_html = """
             },
         });
 
-        // Make the canvas list also draggable
+        // Make the canvas list also draggable and sortable
         new Sortable(canvasEl, {
             animation: 150,
             onEnd: function () {
