@@ -29,7 +29,6 @@ sortable_html = """
             padding-left: 20px;
         }
 
-        /* Dynamically adjustable height for canvas */
         #canvas {
             list-style: none;
             padding-left: 0;
@@ -109,8 +108,7 @@ sortable_html = """
         // Adjust canvas height dynamically based on content
         function updateCanvasHeight() {
             var canvasHeight = canvasEl.scrollHeight;
-            document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
-            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+            window.parent.postMessage({height: canvasHeight}, "*");
         }
 
         // Send the canvas items back to Streamlit
@@ -125,22 +123,23 @@ sortable_html = """
 
         window.addEventListener('load', function() {
             updateCanvasHeight();
-            window.parent.postMessage({height: document.body.scrollHeight}, "*");
         });
     </script>
 """
 
-# Render the HTML/JS interface
-components.html(sortable_html, height=1000)
+# Set an initial default height
+if 'canvas_height' not in st.session_state:
+    st.session_state.canvas_height = 1000
 
-# Initialize the session state to store the survey structure if not present
-if 'survey_structure' not in st.session_state:
-    st.session_state.survey_structure = []
+# Render the HTML/JS interface
+components.html(sortable_html, height=st.session_state.canvas_height)
 
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
-    message = st.experimental_get_query_params().get("canvas_order")
+    message = st.experimental_get_query_params().get("height")
     if message:
-        st.session_state.survey_structure = json.loads(message[0]) 
+        # Adjust the height in session_state and trigger a rerun
+        st.session_state.canvas_height = int(message[0])
+        st.experimental_rerun()
 
 handle_message()
