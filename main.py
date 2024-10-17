@@ -9,6 +9,10 @@ st.set_page_config(layout="wide")
 survey_title = st.text_input("Survey Title", "Your Survey Title")
 survey_description = st.text_area("Survey Description", "Enter a description for your survey here...")
 
+# Initialize count of components
+if 'component_count' not in st.session_state:
+    st.session_state.component_count = 0
+
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = f"""
     <style>
@@ -141,6 +145,11 @@ sortable_html = f"""
                 removeComponentButton.classList.add('remove-component-btn');
                 removeComponentButton.addEventListener('click', function () {{
                     canvasEl.removeChild(newItem);
+                    // Update count here
+                    var count = {st.session_state.component_count};  // Get count from Streamlit
+                    count--;
+                    // Update Streamlit session state (send the updated count back)
+                    window.history.pushState({}, '', '?message=' + JSON.stringify({{"count": count}}));
                 }});
 
                 if (newItem.id.startsWith('text_input')) {{
@@ -239,6 +248,10 @@ sortable_html = f"""
 
                 newItem.appendChild(removeComponentButton);
                 canvasEl.appendChild(newItem);
+                // Update count here
+                st.session_state.component_count += 1;
+                // Update Streamlit session state (send the updated count back)
+                window.history.pushState({}, '', '?message=' + JSON.stringify({{"count": st.session_state.component_count}}));
             }}
         }});
     </script>
@@ -251,20 +264,15 @@ components.html(sortable_html, height=1000)
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
-new_question = {
-    'type': 'radio',  # or 'text_input', 'slider', etc.
-    'options': ["Option 1", "Option 2", "Option 3"],  # Options for radio questions
-    'question': "Your Question Here"  # The text of the question
-}
-st.session_state.survey_structure.append(new_question)
-
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
     message = st.experimental_get_query_params().get('message', None)
     if message:
         # Parse the message and update session state
         message_data = json.loads(message[0])
-        st.session_state.survey_structure = message_data
+        if 'count' in message_data:
+            st.session_state.component_count = message_data['count']
+        st.session_state.survey_structure = message_data.get('survey_structure', st.session_state.survey_structure)
 
 # Call the handler to update survey structure
 handle_message()
@@ -272,7 +280,7 @@ handle_message()
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
     # Generate Python code based on `st.session_state.survey_structure`
-    total_number_pages = len(st.session_state.survey_structure) + 1
+    total_number_pages = st.session_state.component_count + 1  # +1 for the title page
     generated_code = f"""
 import streamlit as st
 import requests
@@ -298,9 +306,7 @@ st.set_page_config(page_title="IPFS-Based Survey")
 st.title("{survey_title}")
 st.write("{survey_description}")
 
-            """
+    """
 
     # Display the generated code
     st.code(generated_code, language="python")
-
-
