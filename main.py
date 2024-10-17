@@ -56,6 +56,20 @@ sortable_html = """
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
 
+                // Add a text box for the Text Input component
+                if (newItem.id.startsWith('text_input')) {
+                    var inputLabel = document.createElement('label');
+                    inputLabel.innerText = 'Question:';
+                    var inputBox = document.createElement('input');
+                    inputBox.type = 'text';
+                    inputBox.placeholder = 'Type your question here...';
+                    inputBox.style.display = 'block';
+                    inputBox.style.marginTop = '5px';
+
+                    newItem.appendChild(inputLabel);
+                    newItem.appendChild(inputBox);
+                }
+
                 // Send the updated canvas order to Streamlit
                 updateCanvas();
             },
