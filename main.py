@@ -4,9 +4,9 @@ import json
 
 # Define the HTML and JavaScript for the drag-and-drop interface with updated layout
 sortable_html = """
-    <div style="display: flex; height: 100vh; margin: 0; padding: 0;">
+    <div style="display: flex;">
         <!-- Left Column (Components List) -->
-        <div style="flex: 0 0 15%; border-right: 1px solid #ccc; background-color: #f8f9fa; padding: 20px; box-sizing: border-box;">
+        <div style="width: 20%; border-right: 1px solid #ccc; padding-right: 10px; position: fixed; left: 0; top: 0; height: 100%; background-color: #f8f9fa; padding-top: 20px;">
             <h3>Drag and Drop Survey Elements:</h3>
             <ul id="items" style="list-style: none; padding-left: 0;">
                 <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
@@ -16,9 +16,9 @@ sortable_html = """
         </div>
         
         <!-- Right Column (Survey Canvas) -->
-        <div style="flex: 1; padding: 20px; box-sizing: border-box;">
+        <div style="width: 70%; margin-left: 25%; padding-left: 10px;">
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 500px; border: 1px dashed #ccc;">
+            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px; border: 1px dashed #ccc;">
             </ul>
         </div>
     </div>
