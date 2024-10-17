@@ -253,18 +253,50 @@ if 'survey_structure' not in st.session_state:
 
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
-    message = st.experimental_get_query_params().get("canvas_order")
+    message = st.experimental_get_query_params().get('message', None)
     if message:
-        st.session_state.survey_structure = json.loads(message[0])
+        # Parse the message and update session state
+        message_data = json.loads(message[0])
+        st.session_state.survey_structure = message_data
 
+# Call the handler to update survey structure
 handle_message()
 
-# Preview the survey structure
-if st.session_state.survey_structure:
-    st.write("Current Survey Structure:", st.session_state.survey_structure)
-
-# Button to generate the code (code generation can go here)
+# Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
-    st.write("Generated Survey Code:")
-    # Here is where the code generation logic will be handled
-    # We will create the survey code based on the structure saved in `st.session_state.survey_structure`
+    # Generate Python code based on `st.session_state.survey_structure`
+    generated_code = f"""
+import streamlit as st
+
+# Survey title and description
+st.title("{survey_title}")
+st.write("{survey_description}")
+
+# Initialize session state for responses
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = 1
+
+    """
+
+    for idx, component in enumerate(st.session_state.survey_structure):
+        if component["type"] == "text_input":
+            generated_code += f"""
+# Page {idx + 1} - Text Input
+if st.session_state["current_page"] == {idx + 1}:
+    st.text_input("{component['question']}")
+            """
+        elif component["type"] == "radio":
+            generated_code += f"""
+# Page {idx + 1} - Multiple Choice
+if st.session_state["current_page"] == {idx + 1}:
+    st.radio("{component['question']}", options={component['options']})
+            """
+        elif component["type"] == "slider":
+            generated_code += f"""
+# Page {idx + 1} - Slider
+if st.session_state["current_page"] == {idx + 1}:
+    st.slider("{component['question']}", min_value={component['min_value']}, max_value={component['max_value']})
+            """
+
+    # Display the generated code
+    st.code(generated_code, language="python")
