@@ -99,6 +99,7 @@ sortable_html = """
             <ul id="items" style="list-style: none; padding-left: 0;">
                 <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
                 <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
+                <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider Question</li>
             </ul>
         </div>
 
@@ -226,31 +227,57 @@ sortable_html = """
                     });
                 }
 
+                // Add functionality for the Slider Question component
+                if (newItem.id.startsWith('slider')) {
+                    // Add a text box for the question
+                    var sliderQuestionBox = document.createElement('input');
+                    sliderQuestionBox.type = 'text';
+                    sliderQuestionBox.placeholder = 'Type your slider question...';
+                    sliderQuestionBox.classList.add('input-box');
+
+                    // Add labels for the slider
+                    var minLabelBox = document.createElement('input');
+                    minLabelBox.type = 'text';
+                    minLabelBox.placeholder = 'Min Label';
+                    minLabelBox.classList.add('input-box');
+
+                    var maxLabelBox = document.createElement('input');
+                    maxLabelBox.type = 'text';
+                    maxLabelBox.placeholder = 'Max Label';
+                    maxLabelBox.classList.add('input-box');
+
+                    // Add input boxes for min and max values
+                    var minValueBox = document.createElement('input');
+                    minValueBox.type = 'number';
+                    minValueBox.placeholder = 'Min Value';
+                    minValueBox.classList.add('input-box');
+
+                    var maxValueBox = document.createElement('input');
+                    maxValueBox.type = 'number';
+                    maxValueBox.placeholder = 'Max Value';
+                    maxValueBox.classList.add('input-box');
+
+                    // Append the question box, labels, and values to the new item
+                    newItem.appendChild(sliderQuestionBox);
+                    newItem.appendChild(minLabelBox);
+                    newItem.appendChild(maxLabelBox);
+                    newItem.appendChild(minValueBox);
+                    newItem.appendChild(maxValueBox);
+                }
+
                 // Append the Remove Component button ('X') to the new item
                 newItem.appendChild(removeComponentButton);
+                canvasEl.appendChild(newItem);
 
-                updateCanvas();
-            },
-            onEnd: function () {
-                updateCanvas();
-            },
-        });
-
-        // Send the canvas items back to Streamlit
-        function updateCanvas() {
-            let order = [];
-            document.querySelectorAll('#canvas li').forEach(function(el) {
-                order.push(el.id);
-            });
-
-            window.parent.postMessage({type: 'canvas_order', order: order}, '*');
-        }
-
-        window.addEventListener('load', function() {
-            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+                // Send the updated canvas content back to Streamlit
+                const canvasContent = JSON.stringify(Array.from(canvasEl.children).map(item => item.innerHTML));
+                window.parent.postMessage({ canvas: canvasContent }, "*");
+            }
         });
     </script>
 """
+
+
 
 # Render the HTML/JS interface
 components.html(sortable_html, height=1000)
