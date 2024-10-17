@@ -271,35 +271,29 @@ import streamlit as st
 import requests
 import json
 
+
+total_number_pages = {total_number_pages}
+placeholder_buttons = None
+
+
+# Function that records radio element changes 
+def radio_change(element, state, key):
+    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
+
+# Function that disables the last button while data is uploaded to IPFS 
+def button_disable():
+    st.session_state["disabled"] = True
+
+# Changing the App title
+st.set_page_config(page_title="IPFS-Based Survey")
+
 # Survey title and description
 st.title("{survey_title}")
 st.write("{survey_description}")
 
-# Initialize session state for responses
-if "current_page" not in st.session_state:
-    st.session_state["current_page"] = 1
-
-    """
-
-    for idx, component in enumerate(st.session_state.survey_structure):
-        if component["type"] == "text_input":
-            generated_code += f"""
-# Page {idx + 1} - Text Input
-if st.session_state["current_page"] == {idx + 1}:
-    st.text_input("{component['question']}")
-            """
-        elif component["type"] == "radio":
-            generated_code += f"""
-# Page {idx + 1} - Multiple Choice
-if st.session_state["current_page"] == {idx + 1}:
-    st.radio("{component['question']}", options={component['options']})
-            """
-        elif component["type"] == "slider":
-            generated_code += f"""
-# Page {idx + 1} - Slider
-if st.session_state["current_page"] == {idx + 1}:
-    st.slider("{component['question']}", min_value={component['min_value']}, max_value={component['max_value']})
             """
 
     # Display the generated code
     st.code(generated_code, language="python")
+
+
