@@ -99,7 +99,6 @@ sortable_html = """
             <ul id="items" style="list-style: none; padding-left: 0;">
                 <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
                 <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
-                <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
             </ul>
         </div>
 
@@ -225,66 +224,6 @@ sortable_html = """
                         var newOptionContainer = createOptionBox(optionCount);  // Create new option with remove button
                         optionsContainer.appendChild(newOptionContainer);
                     });
-                }
-
-                // Add functionality for the Slider component
-                if (newItem.id.startsWith('slider')) {
-                    // Add a text box for the question
-                    var questionBox = document.createElement('input');
-                    questionBox.type = 'text';
-                    questionBox.placeholder = 'Type your slider question...';
-                    questionBox.classList.add('input-box');
-                    
-                    // Add inputs for labels on both sides of the slider
-                    var minLabelBox = document.createElement('input');
-                    minLabelBox.type = 'text';
-                    minLabelBox.placeholder = 'Label for min value';
-                    minLabelBox.classList.add('input-box');
-
-                    var maxLabelBox = document.createElement('input');
-                    maxLabelBox.type = 'text';
-                    maxLabelBox.placeholder = 'Label for max value';
-                    maxLabelBox.classList.add('input-box');
-                    
-                    // Add inputs for min and max slider values
-                    var minValueBox = document.createElement('input');
-                    minValueBox.type = 'number';
-                    minValueBox.placeholder = 'Min value';
-                    minValueBox.classList.add('input-box');
-
-                    var maxValueBox = document.createElement('input');
-                    maxValueBox.type = 'number';
-                    maxValueBox.placeholder = 'Max value';
-                    maxValueBox.classList.add('input-box');
-                    
-                    // Append everything to the new slider component
-                    newItem.appendChild(questionBox);
-                    newItem.appendChild(minLabelBox);
-                    newItem.appendChild(maxLabelBox);
-                    newItem.appendChild(minValueBox);
-                    newItem.appendChild(maxValueBox);
-                    
-                    // Create a slider element
-                    var slider = document.createElement('input');
-                    slider.type = 'range';
-                    slider.min = minValueBox.value || 0;  // Default min value
-                    slider.max = maxValueBox.value || 100;  // Default max value
-                    slider.value = (slider.max - slider.min) / 2; // Default position in the middle
-                    slider.style.width = '100%';
-                    
-                    // Update slider min and max values based on input
-                    minValueBox.addEventListener('change', function () {
-                        slider.min = minValueBox.value;
-                        slider.value = Math.max(slider.value, slider.min); // Adjust slider if needed
-                    });
-
-                    maxValueBox.addEventListener('change', function () {
-                        slider.max = maxValueBox.value;
-                        slider.value = Math.min(slider.value, slider.max); // Adjust slider if needed
-                    });
-
-                    // Append the slider to the new item
-                    newItem.appendChild(slider);
                 }
 
                 // Append the Remove Component button ('X') to the new item
