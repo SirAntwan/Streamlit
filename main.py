@@ -277,8 +277,6 @@ sortable_html = """
     </script>
 """
 
-
-
 # Render the HTML/JS interface
 components.html(sortable_html, height=1000)
 
@@ -293,3 +291,26 @@ def handle_message():
         st.session_state.survey_structure = json.loads(message[0])
 
 handle_message()
+
+# Add a button to generate Python code from the current survey structure
+if st.button('Generate Python Code'):
+    # Function to generate Python code from the survey structure
+    def generate_python_code(survey_structure):
+        code = '''import streamlit as st\n\n'''
+        page_count = 1
+        for component in survey_structure:
+            if 'Text Question' in component:
+                code += f'def page_{page_count}():\n'
+                code += f'    st.text_input("Your text question here")\n\n'
+            elif 'Multiple Choice (Radio)' in component:
+                code += f'def page_{page_count}():\n'
+                code += f'    st.radio("Your radio question here", ["Option 1", "Option 2"])\n\n'
+            elif 'Slider Question' in component:
+                code += f'def page_{page_count}():\n'
+                code += f'    st.slider("Your slider question here", 0, 100)\n\n'
+            page_count += 1
+        return code
+
+    generated_code = generate_python_code(st.session_state.survey_structure)
+    
+    st.code(generated_code)
