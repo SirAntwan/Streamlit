@@ -2,24 +2,28 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 
-# Define the HTML and JavaScript for the drag-and-drop interface with updated layout
+# Define the HTML and JavaScript for the drag-and-drop interface using Bootstrap for the layout
 sortable_html = """
-    <div style="display: flex;">
-        <!-- Left Column (Components List) -->
-        <div style="width: 250px; border-right: 1px solid #ccc; position: fixed; left: 0; top: 0; bottom: 0; height: 100%; background-color: #f8f9fa; padding-top: 20px; overflow-y: auto; padding-left: 0; padding-right: 10px;">
-            <h3 style="margin-left: 10px;">Drag and Drop Survey Elements:</h3>
-            <ul id="items" style="list-style: none; padding-left: 10px;">
-                <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
-                <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
-                <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
-            </ul>
-        </div>
-        
-        <!-- Right Column (Survey Canvas) -->
-        <div style="flex-grow: 1; margin-left: 260px; padding-left: 10px;">
-            <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px; border: 1px dashed #ccc;">
-            </ul>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Column (Components List) -->
+            <div class="col-2 px-0" style="border-right: 1px solid #ccc; position: fixed; left: 0; top: 0; bottom: 0; height: 100%; background-color: #f8f9fa; padding-top: 20px; overflow-y: auto;">
+                <h3 class="text-center">Drag and Drop Survey Elements:</h3>
+                <ul id="items" class="list-unstyled">
+                    <li id="text_input" class="p-2 border mb-2">Text Question</li>
+                    <li id="radio" class="p-2 border mb-2">Multiple Choice (Radio)</li>
+                    <li id="slider" class="p-2 border mb-2">Slider</li>
+                </ul>
+            </div>
+            
+            <!-- Right Column (Survey Canvas) -->
+            <div class="col offset-2" style="padding-left: 20px;">
+                <h3>Survey Canvas:</h3>
+                <ul id="canvas" class="list-unstyled" style="min-height: 400px; border: 1px dashed #ccc;">
+                </ul>
+            </div>
         </div>
     </div>
 
