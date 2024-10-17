@@ -119,6 +119,41 @@ sortable_html = f"""
             }},
         }});
 
+        // Function to update survey structure in the backend
+        function updateSurveyStructure() {{
+            var structure = [];
+            var canvasItems = canvasEl.children;
+            for (var i = 0; i < canvasItems.length; i++) {{
+                var item = canvasItems[i];
+                var componentType = item.id.split('_')[0];
+                
+                var component = {{
+                    type: componentType
+                }};
+                
+                if (componentType === 'text_input') {{
+                    component.question = item.querySelector('input').value;
+                }}
+                if (componentType === 'radio') {{
+                    component.question = item.querySelector('input').value;
+                    var options = item.querySelectorAll('.input-box');
+                    component.options = Array.from(options).map(opt => opt.value);
+                }}
+                if (componentType === 'slider') {{
+                    component.question = item.querySelector('input[type="text"]').value;
+                    component.min_label = item.querySelector('input[placeholder="Min Label"]').value;
+                    component.max_label = item.querySelector('input[placeholder="Max Label"]').value;
+                    component.min_value = item.querySelector('input[type="number"][placeholder="Min Value (Default 0)"]').value || 0;
+                    component.max_value = item.querySelector('input[type="number"][placeholder="Max Value (Default 100)"]').value || 100;
+                }}
+                structure.push(component);
+            }}
+            
+            // Send the updated structure to the backend
+            var message = encodeURIComponent(JSON.stringify(structure));
+            window.location.href = "?message=" + message;
+        }}
+
         // Make the canvas list also draggable and sortable
         new Sortable(canvasEl, {{
             animation: 150,
@@ -141,10 +176,10 @@ sortable_html = f"""
                 removeComponentButton.classList.add('remove-component-btn');
                 removeComponentButton.addEventListener('click', function () {{
                     canvasEl.removeChild(newItem);
+                    updateSurveyStructure();
                 }});
 
                 if (newItem.id.startsWith('text_input')) {{
-                
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
@@ -153,7 +188,6 @@ sortable_html = f"""
                 }}
 
                 if (newItem.id.startsWith('radio')) {{
-
                     var optionCount = 2;
                     function createOptionBox(optionNumber) {{
                         var optionContainer = document.createElement('div');
@@ -172,6 +206,7 @@ sortable_html = f"""
                         removeButton.addEventListener('click', function () {{
                             optionsContainer.removeChild(optionContainer);
                             optionCount -= 1;
+                            updateSurveyStructure();
                         }});
 
                         optionContainer.appendChild(newOptionBox);
@@ -203,6 +238,7 @@ sortable_html = f"""
                         optionCount += 1;
                         var newOptionContainer = createOptionBox(optionCount);
                         optionsContainer.appendChild(newOptionContainer);
+                        updateSurveyStructure();
                     }});
                 }}
 
@@ -240,39 +276,33 @@ sortable_html = f"""
                 }}
 
                 newItem.appendChild(removeComponentButton);
-                canvasEl.appendChild(newItem);
+                updateSurveyStructure();
+            }},
+            onSort: function () {{
+                updateSurveyStructure();
+            }},
+            onRemove: function () {{
+                updateSurveyStructure();
             }}
         }});
     </script>
 """
 
-# Render the HTML/JS interface
-components.html(sortable_html, height=1000)
+# Display the drag-and-drop interface in the Streamlit app
+components.html(sortable_html, height=600)
 
-# Initialize the session state to store the survey structure if not present
-if 'survey_structure' not in st.session_state:
-    st.session_state.survey_structure = []
+# Check for survey structure updates from the front-end
+if 'message' in st.experimental_get_query_params():
+    survey_structure_json = st.experimental_get_query_params()['message'][0]
+    st.session_state['survey_structure'] = json.loads(survey_structure_json)
 
+# Display the current survey structure as JSON
+if 'survey_structure' in st.session_state:
+    st.write("Current Survey Structure:", st.session_state['survey_structure'])
 
-# Function to handle messages from the drag-and-drop interface
-def handle_message():
-    message = st.experimental_get_query_params().get('message', None)
-    if message:
-        # Parse the message and update session state
-        message_data = json.loads(message[0])
-        st.session_state.survey_structure = message_data
-
-# Call the handler to update survey structure
-handle_message()
-
-# Button to generate the code (code generation goes here)
-if st.button("Generate Survey Code"):
-    # Generate Python code based on st.session_state.survey_structure
-    total_number_pages = len(st.session_state.survey_structure) + 1
-    generated_code = f"""
+# Code generation for Python based on the survey structure
+generated_code = """
 import streamlit as st
-import request
-import json
 
 total_number_pages = {total_number_pages}
 placeholder_buttons = None
@@ -292,5 +322,5 @@ st.set_page_config(page_title="IPFS-Based Survey")
 st.title("{survey_title}")
 st.write("{survey_description}")
 """
-    # Display the generated code
-    st.code(generated_code, language="python")
+# Display the generated code
+st.code(generated_code, language="python")
