@@ -271,6 +271,9 @@ if st.button("Generate Survey Code"):
     total_number_pages = len(st.session_state.survey_structure) + 1
     generated_code = f"""
 import streamlit as st
+import request
+import json
+
 total_number_pages = {total_number_pages}
 placeholder_buttons = None
 
