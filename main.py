@@ -32,24 +32,36 @@ sortable_html = """
         new Sortable(itemsEl, {
             animation: 150,
             sort: false,  // Disable sorting in the components list
-            onEnd: function (evt) {
-                // Create a new item element for the canvas
-                var newItem = document.createElement('li');
-                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID for each item
-                newItem.innerText = evt.item.innerText;
-                newItem.style.padding = "10px";
-                newItem.style.border = "1px solid #ccc";
-                newItem.style.marginBottom = "5px";
-                canvasEl.appendChild(newItem);
-                
-                // Send the updated canvas order to Streamlit
-                updateCanvas();
+            group: {
+                name: 'shared',
+                pull: 'clone',  // Allow components to be dragged out but not moved
+                put: false      // Prevent dropping back into the original list
             },
+            onEnd: function (evt) {
+                // This prevents items from being moved around in the component list
+            }
         });
 
         // Make the canvas list also draggable and sortable
         new Sortable(canvasEl, {
             animation: 150,
+            group: {
+                name: 'shared',  // Enable dragging between lists
+                pull: false,     // Disable dragging from the canvas
+                put: true        // Allow dropping components into the canvas
+            },
+            onAdd: function (evt) {
+                var newItem = evt.item;
+                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID for each new item
+
+                // Ensure it doesn't appear in the original list again
+                newItem.style.padding = "10px";
+                newItem.style.border = "1px solid #ccc";
+                newItem.style.marginBottom = "5px";
+
+                // Send the updated canvas order to Streamlit
+                updateCanvas();
+            },
             onEnd: function () {
                 updateCanvas();
             },
