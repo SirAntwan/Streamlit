@@ -37,7 +37,6 @@ sortable_html = """
             transition: all 0.3s ease;
         }
 
-        /* Increase the width of text boxes */
         .input-box {
             width: 80%;
             padding: 5px;
@@ -57,6 +56,18 @@ sortable_html = """
 
         .add-option-btn:hover {
             background-color: #0056b3;
+        }
+
+        .remove-option-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .remove-option-btn:hover {
+            background-color: #c82333;
         }
     </style>
 
@@ -80,10 +91,6 @@ sortable_html = """
     <script>
         var itemsEl = document.getElementById('items');
         var canvasEl = document.getElementById('canvas');
-
-        
-
-        
 
         // Make the components list draggable but not sortable
         new Sortable(itemsEl, {
@@ -124,49 +131,66 @@ sortable_html = """
 
                 // Add functionality for the Multiple Choice (Radio) component
                 if (newItem.id.startsWith('radio')) {
+                    var optionCount = 2; // Initial options are 2
+                    
+                    // Function to create a new option box with remove button
+                    function createOptionBox(optionNumber) {
+                        var optionContainer = document.createElement('div');
+                        optionContainer.style.display = 'flex';
+                        optionContainer.style.alignItems = 'center';
+                        
+                        var newOptionBox = document.createElement('input');
+                        newOptionBox.type = 'text';
+                        newOptionBox.placeholder = 'Option ' + optionNumber;
+                        newOptionBox.classList.add('input-box');
+                        
+                        var removeButton = document.createElement('button');
+                        removeButton.textContent = 'Remove';
+                        removeButton.classList.add('remove-option-btn');
+                        removeButton.style.marginLeft = '10px';
+                        
+                        // Remove the option when clicked
+                        removeButton.addEventListener('click', function () {
+                            optionsContainer.removeChild(optionContainer);
+                        });
+
+                        optionContainer.appendChild(newOptionBox);
+                        optionContainer.appendChild(removeButton);
+
+                        return optionContainer;
+                    }
+
                     // Add a text box for the question
                     var questionBox = document.createElement('input');
                     questionBox.type = 'text';
                     questionBox.placeholder = 'Type your multiple choice question...';
                     questionBox.classList.add('input-box');
 
-                    // Add two text boxes for the initial options
-                    var option1Box = document.createElement('input');
-                    option1Box.type = 'text';
-                    option1Box.placeholder = 'Option 1';
-                    option1Box.classList.add('input-box');
+                    // Container for options
+                    var optionsContainer = document.createElement('div');
 
-                    var option2Box = document.createElement('input');
-                    option2Box.type = 'text';
-                    option2Box.placeholder = 'Option 2';
-                    option2Box.classList.add('input-box');
+                    // Initial options with remove buttons
+                    var option1Container = createOptionBox(1);
+                    var option2Container = createOptionBox(2);
+                    
+                    optionsContainer.appendChild(option1Container);
+                    optionsContainer.appendChild(option2Container);
 
                     // Add a button to add more options dynamically
                     var addButton = document.createElement('button');
                     addButton.textContent = 'Add Option';
                     addButton.classList.add('add-option-btn');
-                    
-                    // Container for options
-                    var optionsContainer = document.createElement('div');
-                    optionsContainer.appendChild(option1Box);
-                    optionsContainer.appendChild(option2Box);
 
-                    // Append the question box and options container to the new item
+                    // Append the question box, options container, and add button to the new item
                     newItem.appendChild(questionBox);
                     newItem.appendChild(optionsContainer);
                     newItem.appendChild(addButton);
 
-                    // Counter to keep track of the number of options
-                    let optionCount = 2;
-
                     // Add event listener to the button to add new options dynamically
                     addButton.addEventListener('click', function () {
                         optionCount += 1;
-                        var newOptionBox = document.createElement('input');
-                        newOptionBox.type = 'text';
-                        newOptionBox.placeholder = 'Option ' + optionCount;  // Dynamic numbering
-                        newOptionBox.classList.add('input-box');
-                        optionsContainer.appendChild(newOptionBox);
+                        var newOptionContainer = createOptionBox(optionCount);  // Create new option with remove button
+                        optionsContainer.appendChild(newOptionContainer);
                     });
                 }
 
