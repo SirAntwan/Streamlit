@@ -70,27 +70,27 @@ sortable_html = """
             document.querySelectorAll('#canvas li').forEach(function(el) {
                 order.push(el.id);
             });
-            const message = JSON.stringify(order);
-            window.parent.postMessage({isStreamlitMessage: true, type: 'canvas_order', order: message}, '*');
+            window.parent.postMessage({type: 'canvas_order', order: order}, '*');
         }
     </script>
 """
 
-# Render drag-and-drop interface in Streamlit, allowing messages to be received
-component_value = components.html(sortable_html, height=400, allow_fullscreen=True, scrolling=True)
+# Render drag-and-drop interface in Streamlit
+components.html(sortable_html, height=400)
 
 # Initialize the session state to store the survey structure if not present
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
-# Check if any message has been received and update the state accordingly
-if component_value is not None:
-    try:
-        # Load the received JSON message
-        received_order = json.loads(component_value)
-        st.session_state.survey_structure = received_order
-    except json.JSONDecodeError:
-        st.warning("Received an invalid message")
+# Function to handle messages from the drag-and-drop interface
+def handle_message():
+    # Try capturing the canvas order from URL parameters
+    message = st.experimental_get_query_params().get("canvas_order")
+    if message:
+        st.session_state.survey_structure = json.loads(message[0])  # Save the order in session_state
 
-# Display the current survey structure
+# Handle messages (to capture the drag-and-drop order)
+handle_message()
+
+# Display current survey structure for debugging
 st.write("Current Survey Structure:", st.session_state.survey_structure)
