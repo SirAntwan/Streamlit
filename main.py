@@ -6,7 +6,7 @@ import json
 sortable_html = """
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="padding-left: 0px;">
         <div class="row">
             <!-- Left Column (Components List) -->
             <div class="col-2 px-0" style="border-right: 1px solid #ccc; position: fixed; left: 0; top: 0; bottom: 0; height: 100%; background-color: #f8f9fa; padding-top: 20px; overflow-y: auto;">
