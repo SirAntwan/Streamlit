@@ -12,7 +12,7 @@ survey_description = st.text_area("Survey Description", "Enter a description for
 count = 0
 
 # Define the HTML and JavaScript for the drag-and-drop interface
-sortable_html = f"""
+sortable_html = """
     <style>
         body {{
             margin: 0;
