@@ -37,9 +37,6 @@ sortable_html = """
                 pull: 'clone',  // Allow components to be dragged out but not moved
                 put: false      // Prevent dropping back into the original list
             },
-            onEnd: function (evt) {
-                // This prevents items from being moved around in the component list
-            }
         });
 
         // Make the canvas list also draggable and sortable
@@ -79,7 +76,7 @@ sortable_html = """
 """
 
 # Render drag-and-drop interface in Streamlit
-components.html(sortable_html, height=400)
+components.html(sortable_html, height=400, allow_post_message=True, key="drag_drop_survey")
 
 # Initialize the session state to store the survey structure if not present
 if 'survey_structure' not in st.session_state:
@@ -87,11 +84,16 @@ if 'survey_structure' not in st.session_state:
 
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
-    # Use experimental_get_query_params to capture the canvas order
+    # Capture the canvas order from the frontend
     message = st.experimental_get_query_params()
-    if "canvas_order" in message:
-        st.session_state.survey_structure = json.loads(message["canvas_order"][0])  # Save the order in session_state
+    message = st.session_state.get('drag_drop_survey')
+
+    if message:
+        if "canvas_order" in message:
+            st.session_state.survey_structure = json.loads(message["canvas_order"])  # Save the order in session_state
 
 # Handle messages (to capture the drag-and-drop order)
 handle_message()
 
+# Display the current survey structure
+st.write("Current Survey Structure:", st.session_state.survey_structure)
