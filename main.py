@@ -36,9 +36,6 @@ sortable_html = """
                 name: 'shared',
                 pull: 'clone',  // Allow components to be dragged out but not moved
                 put: false      // Prevent dropping back into the original list
-            },
-            onEnd: function (evt) {
-                // This prevents items from being moved around in the component list
             }
         });
 
@@ -85,6 +82,9 @@ components.html(sortable_html, height=400)
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
+if 'questions' not in st.session_state:
+    st.session_state.questions = {}
+
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
     # Use experimental_get_query_params to capture the canvas order
@@ -100,15 +100,13 @@ def generate_survey():
     st.write("### Preview your survey:")
     for item in st.session_state.survey_structure:
         if item.startswith('text_input'):
-            st.text_input(f"Enter your name (Text Input {item.split('_')[-1]}):")
+            question_key = f"question_{item}"
+            question_text = st.session_state.questions.get(question_key, "Enter your question:")
+            st.text_input(question_text, key=question_key)
         elif item.startswith('radio'):
-            st.radio(f"Choose your favorite fruit (Radio {item.split('_')[-1]}):", ["Apple", "Banana", "Orange"])
+            st.radio("Choose your favorite fruit:", ["Apple", "Banana", "Orange"])
         elif item.startswith('slider'):
-            st.slider(f"Rate your experience (Slider {item.split('_')[-1]}):", 1, 10)
-
-# Button to preview the survey
-if st.button("Preview Survey"):
-    generate_survey()
+            st.slider("Rate your experience:", 1, 10)
 
 # Function to generate Python code based on the survey structure
 def generate_code():
@@ -116,17 +114,23 @@ def generate_code():
     code += "def main():\n"
     for item in st.session_state.survey_structure:
         if item.startswith("text_input"):
-            code += f"    st.text_input('Enter your name (Text Input {item.split('_')[-1]}):')\n"
+            question = st.session_state.questions.get(f"question_{item}", "Enter your question:")
+            code += f"    st.text_input('{question}')\n"
         elif item.startswith("radio"):
-            code += f"    st.radio('Choose your favorite fruit (Radio {item.split('_')[-1]}):', ['Apple', 'Banana', 'Orange'])\n"
+            code += "    st.radio('Choose your favorite fruit:', ['Apple', 'Banana', 'Orange'])\n"
         elif item.startswith("slider"):
-            code += f"    st.slider('Rate your experience (Slider {item.split('_')[-1]}):', 1, 10)\n"
+            code += "    st.slider('Rate your experience:', 1, 10)\n"
     code += "\nif __name__ == '__main__':\n    main()"
     
     return code
+
+# Button to preview the survey
+if st.button("Preview Survey"):
+    generate_survey()
 
 # Allow the user to download the generated Python code
 if st.button("Generate Python Code"):
     code = generate_code()
     st.code(code, language='python')
     st.download_button("Download Python Code", code, file_name="survey.py")
+
