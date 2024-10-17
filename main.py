@@ -5,6 +5,19 @@ import json
 # Set the page to wide mode to ensure the full width of the screen is used
 st.set_page_config(layout="wide")
 
+# Initialize session state for title and description
+if 'survey_title' not in st.session_state:
+    st.session_state.survey_title = ""
+if 'survey_description' not in st.session_state:
+    st.session_state.survey_description = ""
+
+# Text input for Survey Title
+st.title("Survey Builder")
+st.text_input("Survey Title", key='survey_title', placeholder="Enter the title of the survey")
+
+# Text input for Survey Description
+st.text_area("Survey Description", key='survey_description', placeholder="Enter a description of the survey")
+
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
     <style>
@@ -291,26 +304,3 @@ def handle_message():
         st.session_state.survey_structure = json.loads(message[0])
 
 handle_message()
-
-# Add a button to generate Python code from the current survey structure
-if st.button('Generate Python Code'):
-    # Function to generate Python code from the survey structure
-    def generate_python_code(survey_structure):
-        code = '''import streamlit as st\n\n'''
-        page_count = 1
-        for component in survey_structure:
-            if 'Text Question' in component:
-                code += f'def page_{page_count}():\n'
-                code += f'    st.text_input("Your text question here")\n\n'
-            elif 'Multiple Choice (Radio)' in component:
-                code += f'def page_{page_count}():\n'
-                code += f'    st.radio("Your radio question here", ["Option 1", "Option 2"])\n\n'
-            elif 'Slider Question' in component:
-                code += f'def page_{page_count}():\n'
-                code += f'    st.slider("Your slider question here", 0, 100)\n\n'
-            page_count += 1
-        return code
-
-    generated_code = generate_python_code(st.session_state.survey_structure)
-    
-    st.code(generated_code)
