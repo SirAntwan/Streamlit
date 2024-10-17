@@ -5,9 +5,10 @@ import json
 # Set the page to wide mode to ensure the full width of the screen is used
 st.set_page_config(layout="wide")
 
-# Define the HTML for including the external CSS and JS files
+# Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
-    <link rel="stylesheet" type="text/css" href="dragAndDrop.css">
+    <link rel="stylesheet" href="dragAndDrop.css">
+
     <div>
         <!-- Left Column (Components List) -->
         <div class="left-column">
@@ -25,11 +26,13 @@ sortable_html = """
             <ul id="canvas" style="min-height: 200px;"></ul>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <script src="dragAndDrop.js"></script>
+        
 """
 
-# Render drag-and-drop interface in Streamlit
+# Render drag-and-drop interface in Streamlit with large height
 components.html(sortable_html, height=1200)
 
 # Initialize the session state to store the survey structure if not present
