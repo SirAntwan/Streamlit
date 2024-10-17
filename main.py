@@ -144,6 +144,7 @@ sortable_html = f"""
                 }});
 
                 if (newItem.id.startsWith('text_input')) {{
+                
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
@@ -152,6 +153,7 @@ sortable_html = f"""
                 }}
 
                 if (newItem.id.startsWith('radio')) {{
+
                     var optionCount = 2;
                     function createOptionBox(optionNumber) {{
                         var optionContainer = document.createElement('div');
@@ -251,6 +253,7 @@ components.html(sortable_html, height=1000)
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
+
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
     message = st.experimental_get_query_params().get('message', None)
@@ -264,21 +267,16 @@ handle_message()
 
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
-    # Generate Python code based on `st.session_state.survey_structure`
-    total_number_pages = len(st.session_state.survey_structure)  # Updated to reflect correct length
+    # Generate Python code based on st.session_state.survey_structure
+    total_number_pages = len(st.session_state.survey_structure) + 1
     generated_code = f"""
 import streamlit as st
-import requests
-import json
-
-
-total_number_pages = {total_number_pages}  # Total number of survey components
+total_number_pages = {total_number_pages}
 placeholder_buttons = None
-
 
 # Function that records radio element changes 
 def radio_change(element, state, key):
-    st.session_state[state] = element.index(st.session_state[key])  # Setting previously selected option
+    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
 
 # Function that disables the last button while data is uploaded to IPFS 
 def button_disable():
@@ -290,8 +288,6 @@ st.set_page_config(page_title="IPFS-Based Survey")
 # Survey title and description
 st.title("{survey_title}")
 st.write("{survey_description}")
-
-    """
-
+"""
     # Display the generated code
     st.code(generated_code, language="python")
