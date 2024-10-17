@@ -119,13 +119,21 @@ sortable_html = """
             const canvasHeight = Math.max(200, order.length * 60);  // Each item adds 60px to the height
             document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
             
+            // Update the iframe height for dynamic resizing in Streamlit
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+            
             window.parent.postMessage({type: 'canvas_order', order: order}, '*');
         }
+
+        // Set the initial iframe height on load
+        window.addEventListener('load', function() {
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+        });
     </script>
 """
 
-# Render drag-and-drop interface in Streamlit
-components.html(sortable_html, height=600)
+# Render drag-and-drop interface in Streamlit with large height
+components.html(sortable_html, height=1200)
 
 # Initialize the session state to store the survey structure if not present
 if 'survey_structure' not in st.session_state:
@@ -141,4 +149,5 @@ def handle_message():
 # Handle messages (to capture the drag-and-drop order)
 handle_message()
 
-
+# Display current survey structure for debugging
+st.write("Current Survey Structure:", st.session_state.survey_structure)
