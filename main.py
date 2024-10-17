@@ -251,6 +251,13 @@ components.html(sortable_html, height=1000)
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
+new_question = {
+    'type': 'radio',  # or 'text_input', 'slider', etc.
+    'options': ["Option 1", "Option 2", "Option 3"],  # Options for radio questions
+    'question': "Your Question Here"  # The text of the question
+}
+st.session_state.survey_structure.append(new_question)
+
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
     message = st.experimental_get_query_params().get('message', None)
