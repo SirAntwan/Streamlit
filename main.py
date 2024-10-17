@@ -58,7 +58,7 @@ sortable_html = """
             background-color: #0056b3;
         }
 
-        .remove-option-btn, .remove-component-btn {
+        .remove-option-btn {
             background-color: #dc3545;
             color: white;
             border: none;
@@ -66,8 +66,30 @@ sortable_html = """
             cursor: pointer;
         }
 
-        .remove-option-btn:hover, .remove-component-btn:hover {
+        .remove-option-btn:hover {
             background-color: #c82333;
+        }
+
+        .remove-component-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .remove-component-btn:hover {
+            background-color: #c82333;
+        }
+
+        .component-container {
+            position: relative;
+            padding-right: 40px;  /* Ensure space for the 'X' button */
         }
     </style>
 
@@ -97,7 +119,7 @@ sortable_html = """
             animation: 150,
             sort: false,
             group: {
-                name: 'shared',
+                name: 'shared',  
                 pull: 'clone',  
                 put: false      
             },
@@ -119,13 +141,13 @@ sortable_html = """
                 newItem.style.padding = "10px";
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
+                newItem.classList.add('component-container');  // To ensure proper layout
 
-                // Add a "Remove Component" button to delete the whole component
+                // Add a "Remove Component" button as 'X' to delete the whole component
                 var removeComponentButton = document.createElement('button');
-                removeComponentButton.textContent = 'Remove Component';
+                removeComponentButton.textContent = 'X';
                 removeComponentButton.classList.add('remove-component-btn');
-                removeComponentButton.style.marginTop = '10px';
-                
+
                 removeComponentButton.addEventListener('click', function () {
                     canvasEl.removeChild(newItem);  // Remove the entire component
                 });
@@ -205,7 +227,7 @@ sortable_html = """
                     });
                 }
 
-                // Append the Remove Component button to the new item
+                // Append the Remove Component button ('X') to the new item
                 newItem.appendChild(removeComponentButton);
 
                 updateCanvas();
