@@ -29,6 +29,13 @@ sortable_html = """
             margin-left: 20%;  /* Push right column to the right of the fixed column */
             padding-left: 20px;
         }
+        /* Default minimum height for the canvas */
+        #canvas {
+            list-style: none;
+            padding-left: 0;
+            border: 1px dashed #ccc;
+            transition: min-height 0.3s ease;  /* Smooth resizing */
+        }
     </style>
 
     <div>
@@ -45,8 +52,7 @@ sortable_html = """
         <!-- Right Column (Survey Canvas) -->
         <div class="right-column">
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 400px; border: 1px dashed #ccc;">
-            </ul>
+            <ul id="canvas" style="min-height: 200px;"></ul>
         </div>
     </div>
 
@@ -94,7 +100,7 @@ sortable_html = """
                     newItem.appendChild(inputBox);
                 }
 
-                // Send the updated canvas order to Streamlit
+                // Send the updated canvas order to Streamlit and adjust canvas height
                 updateCanvas();
             },
             onEnd: function () {
@@ -108,6 +114,11 @@ sortable_html = """
             document.querySelectorAll('#canvas li').forEach(function(el) {
                 order.push(el.id);
             });
+            
+            // Adjust canvas height based on the number of items
+            const canvasHeight = Math.max(200, order.length * 60);  // Each item adds 60px to the height
+            document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
+            
             window.parent.postMessage({type: 'canvas_order', order: order}, '*');
         }
     </script>
