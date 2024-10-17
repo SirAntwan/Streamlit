@@ -2,59 +2,85 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 
-# Define the HTML and JavaScript for the drag-and-drop interface with Flexbox layout
+# Initial components already on the canvas (can be modified to any starting structure)
+initial_canvas = [
+    {"id": "text_input", "type": "Text Input"},
+    {"id": "radio", "type": "Multiple Choice (Radio)"},
+    {"id": "slider", "type": "Slider"},
+]
+
+# Render the drag-and-drop interface with two columns: 
+# One for dragging components and one for the canvas
 sortable_html = """
-    <div style="display: flex; justify-content: space-between;">
-        <!-- Left Column (Components List) -->
-        <div style="width: 45%; border-right: 1px solid #ccc; padding-right: 10px;">
-            <h3>Drag and Drop Survey Elements:</h3>
-            <ul id="items" style="list-style: none; padding-left: 0;">
+    <div style="display: flex; justify-content: space-between; height: 400px;">
+        <!-- Left Panel: Available Components -->
+        <div style="width: 30%; padding-right: 20px; height: 100%; overflow-y: auto; border: 1px solid #ccc;">
+            <h3>Available Components:</h3>
+            <ul id="components" style="list-style: none; padding-left: 0;">
+                <li id="text_input" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Input</li>
+                <li id="radio" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
+                <li id="slider" class="draggable" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
+            </ul>
+        </div>
+        
+        <!-- Right Panel: Survey Canvas -->
+        <div style="width: 65%; height: 100%; overflow-y: auto; border: 1px dashed #ccc;">
+            <h3>Survey Canvas:</h3>
+            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 300px;">
+                <!-- Pre-filled canvas with initial components -->
                 <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Input</li>
                 <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
                 <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
             </ul>
         </div>
-        
-        <!-- Right Column (Survey Canvas) -->
-        <div style="width: 45%; padding-left: 10px;">
-            <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="list-style: none; padding-left: 0; min-height: 200px; border: 1px dashed #ccc;">
-            </ul>
-        </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <script>
-        var itemsEl = document.getElementById('items');
-        var canvasEl = document.getElementById('canvas');
+        var componentsList = document.getElementById('components');
+        var canvasList = document.getElementById('canvas');
 
-        // Make the components list draggable
-        new Sortable(itemsEl, {
+        // Make the left panel draggable but do not remove items after dragging
+        new Sortable(componentsList, {
             animation: 150,
+            group: "shared",
+            sort: false, // Do not allow sorting in the left panel
             onEnd: function (evt) {
-                // Create a new item element for the canvas
+                let itemId = evt.item.id;
+
+                // Clone dragged item and append it to the canvas
                 var newItem = document.createElement('li');
-                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID for each item
+                newItem.id = itemId + '_' + Date.now();  // Unique ID for each dropped item
                 newItem.innerText = evt.item.innerText;
                 newItem.style.padding = "10px";
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
-                canvasEl.appendChild(newItem);
-                
+                newItem.style.cursor = "grab";
+
+                // Remove the last component before appending a new on
+
+                // Add the new item
+                canvasList.appendChild(newItem);
+
+                if (canvasList.lastChild) {
+                    canvasList.removeChild(canvasList.lastChild);
+                }
+
                 // Send the updated canvas order to Streamlit
                 updateCanvas();
             },
         });
 
-        // Make the canvas list also draggable
-        new Sortable(canvasEl, {
+        // Make the right panel (canvas) draggable and sortable
+        new Sortable(canvasList, {
             animation: 150,
+            group: "shared",
             onEnd: function () {
                 updateCanvas();
             },
         });
 
-        // Function to send the canvas items back to Streamlit
+        // Send the updated canvas order to Streamlit
         function updateCanvas() {
             let order = [];
             document.querySelectorAll('#canvas li').forEach(function(el) {
@@ -65,27 +91,29 @@ sortable_html = """
     </script>
 """
 
-# Render drag-and-drop interface in Streamlit
-components.html(sortable_html, height=400)
+# Render the drag-and-drop interface
+components.html(sortable_html, height=500)
 
-# Initialize the session state to store the survey structure if not present
-if 'survey_structure' not in st.session_state:
-    st.session_state.survey_structure = []
+# Initialize session state for the canvas items if not already initialized
+if 'canvas_items' not in st.session_state:
+    st.session_state.canvas_items = ['text_input', 'radio', 'slider']  # Start with initial canvas components
 
-# Function to handle messages from the drag-and-drop interface
+# Capture and handle incoming messages from the frontend
 def handle_message():
-    # Use experimental_get_query_params to capture the canvas order
     message = st.experimental_get_query_params()
     if "canvas_order" in message:
-        st.session_state.survey_structure = json.loads(message["canvas_order"][0])  # Save the order in session_state
+        new_order = json.loads(message["canvas_order"][0])
 
-# Handle messages (to capture the drag-and-drop order)
+        # Update canvas items in session state
+        st.session_state.canvas_items = new_order
+
+# Handle message updates
 handle_message()
 
-# Function to generate the survey based on the order in st.session_state
+# Function to generate the survey based on the canvas structure
 def generate_survey():
-    st.write("### Preview your survey:")
-    for item in st.session_state.survey_structure:
+    st.write("### Survey Preview:")
+    for item in st.session_state.canvas_items:
         if item.startswith('text_input'):
             st.text_input("Enter your name:")
         elif item.startswith('radio'):
@@ -101,7 +129,7 @@ if st.button("Preview Survey"):
 def generate_code():
     code = "import streamlit as st\n\n"
     code += "def main():\n"
-    for item in st.session_state.survey_structure:
+    for item in st.session_state.canvas_items:
         if item.startswith("text_input"):
             code += "    st.text_input('Enter your name:')\n"
         elif item.startswith("radio"):
@@ -112,7 +140,7 @@ def generate_code():
     
     return code
 
-# Allow the user to download the generated Python code
+# Button to download the generated Python code
 if st.button("Generate Python Code"):
     code = generate_code()
     st.code(code, language='python')
