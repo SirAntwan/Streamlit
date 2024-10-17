@@ -5,9 +5,39 @@ import json
 # Set the page to wide mode to ensure the full width of the screen is used
 st.set_page_config(layout="wide")
 
-# Define the HTML for including the external CSS and JS files
+# Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <style>
+        /* Ensuring no margin or padding on the body */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        /* Fix the left column to the very edge of the screen */
+        .left-column {
+            width: 20%;
+            border-right: 1px solid #ccc;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            overflow-y: auto;
+        }
+        .right-column {
+            margin-left: 20%;  /* Push right column to the right of the fixed column */
+            padding-left: 20px;
+        }
+        /* Default minimum height for the canvas */
+        #canvas {
+            list-style: none;
+            padding-left: 0;
+            border: 1px dashed #ccc;
+            transition: min-height 0.3s ease;  /* Smooth resizing */
+        }
+    </style>
+
     <div>
         <!-- Left Column (Components List) -->
         <div class="left-column">
@@ -22,14 +52,87 @@ sortable_html = """
         <!-- Right Column (Survey Canvas) -->
         <div class="right-column">
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="min-height: 400px;"></ul>
+            <ul id="canvas" style="min-height: 200px;"></ul>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        var itemsEl = document.getElementById('items');
+        var canvasEl = document.getElementById('canvas');
+
+        // Make the components list draggable but not sortable
+        new Sortable(itemsEl, {
+            animation: 150,
+            sort: false,  // Disable sorting in the components list
+            group: {
+                name: 'shared',
+                pull: 'clone',  // Allow components to be dragged out but not moved
+                put: false      // Prevent dropping back into the original list
+            },
+        });
+
+        // Make the canvas list also draggable and sortable
+        new Sortable(canvasEl, {
+            animation: 150,
+            group: {
+                name: 'shared',  // Enable dragging between lists
+                pull: false,     // Disable dragging from the canvas
+                put: true        // Allow dropping components into the canvas
+            },
+            onAdd: function (evt) {
+                var newItem = evt.item;
+                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID for each new item
+
+                // Ensure it doesn't appear in the original list again
+                newItem.style.padding = "10px";
+                newItem.style.border = "1px solid #ccc";
+                newItem.style.marginBottom = "5px";
+
+                // Add a text box for the Text Question component
+                if (newItem.id.startsWith('text_input')) {
+                    var inputBox = document.createElement('input');
+                    inputBox.type = 'text';
+                    inputBox.placeholder = 'Type your question here...';
+                    inputBox.style.display = 'block';
+                    inputBox.style.marginTop = '5px';
+
+                    newItem.appendChild(inputBox);
+                }
+
+                // Send the updated canvas order to Streamlit and adjust canvas height
+                updateCanvas();
+            },
+            onEnd: function () {
+                updateCanvas();
+            },
+        });
+
+        // Function to send the canvas items back to Streamlit
+        function updateCanvas() {
+            let order = [];
+            document.querySelectorAll('#canvas li').forEach(function(el) {
+                order.push(el.id);
+            });
+            
+            // Adjust canvas height based on the number of items
+            const canvasHeight = Math.max(200, order.length * 60);  // Each item adds 60px to the height
+            document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
+            
+            // Update the iframe height for dynamic resizing in Streamlit
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+            
+            window.parent.postMessage({type: 'canvas_order', order: order}, '*');
+        }
+
+        // Set the initial iframe height on load
+        window.addEventListener('load', function() {
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+        });
+    </script>
 """
 
-# Render drag-and-drop interface in Streamlit
+# Render drag-and-drop interface in Streamlit with large height
 components.html(sortable_html, height=1200)
 
 # Initialize the session state to store the survey structure if not present
