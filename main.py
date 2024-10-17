@@ -8,12 +8,11 @@ st.set_page_config(layout="wide")
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
     <style>
-        /* Ensuring no margin or padding on the body */
         body {
             margin: 0;
             padding: 0;
         }
-        /* Fix the left column to the very edge of the screen */
+
         .left-column {
             width: 20%;
             border-right: 1px solid #ccc;
@@ -26,20 +25,21 @@ sortable_html = """
             overflow-y: auto;
         }
         .right-column {
-            margin-left: 20%;  /* Push right column to the right of the fixed column */
+            margin-left: 20%;  
             padding-left: 20px;
         }
-        /* Default minimum height for the canvas */
+
+        /* Dynamically adjustable height for canvas */
         #canvas {
             list-style: none;
             padding-left: 0;
             border: 1px dashed #ccc;
-            transition: min-height 0.3s ease;  /* Smooth resizing */
+            min-height: 200px;
+            transition: all 0.3s ease;
         }
     </style>
 
     <div>
-        <!-- Left Column (Components List) -->
         <div class="left-column">
             <h3>Drag and Drop Survey Elements:</h3>
             <ul id="items" style="list-style: none; padding-left: 0;">
@@ -48,11 +48,10 @@ sortable_html = """
                 <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider</li>
             </ul>
         </div>
-        
-        <!-- Right Column (Survey Canvas) -->
+
         <div class="right-column">
             <h3>Survey Canvas:</h3>
-            <ul id="canvas" style="min-height: 200px;"></ul>
+            <ul id="canvas"></ul>
         </div>
     </div>
 
@@ -64,11 +63,11 @@ sortable_html = """
         // Make the components list draggable but not sortable
         new Sortable(itemsEl, {
             animation: 150,
-            sort: false,  // Disable sorting in the components list
+            sort: false,
             group: {
                 name: 'shared',
-                pull: 'clone',  // Allow components to be dragged out but not moved
-                put: false      // Prevent dropping back into the original list
+                pull: 'clone',  
+                put: false      
             },
         });
 
@@ -76,64 +75,63 @@ sortable_html = """
         new Sortable(canvasEl, {
             animation: 150,
             group: {
-                name: 'shared',  // Enable dragging between lists
-                pull: false,     // Disable dragging from the canvas
-                put: true        // Allow dropping components into the canvas
+                name: 'shared',  
+                pull: false,     
+                put: true        
             },
             onAdd: function (evt) {
                 var newItem = evt.item;
-                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID for each new item
+                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID
 
                 // Ensure it doesn't appear in the original list again
                 newItem.style.padding = "10px";
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
 
-                // Add a text box for the Text Question component
                 if (newItem.id.startsWith('text_input')) {
                     var inputBox = document.createElement('input');
                     inputBox.type = 'text';
                     inputBox.placeholder = 'Type your question here...';
                     inputBox.style.display = 'block';
                     inputBox.style.marginTop = '5px';
-
                     newItem.appendChild(inputBox);
                 }
 
-                // Send the updated canvas order to Streamlit and adjust canvas height
+                updateCanvasHeight();
                 updateCanvas();
             },
             onEnd: function () {
+                updateCanvasHeight();
                 updateCanvas();
             },
         });
 
-        // Function to send the canvas items back to Streamlit
+        // Adjust canvas height dynamically based on content
+        function updateCanvasHeight() {
+            var canvasHeight = canvasEl.scrollHeight;
+            document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
+            window.parent.postMessage({height: document.body.scrollHeight}, "*");
+        }
+
+        // Send the canvas items back to Streamlit
         function updateCanvas() {
             let order = [];
             document.querySelectorAll('#canvas li').forEach(function(el) {
                 order.push(el.id);
             });
-            
-            // Adjust canvas height based on the number of items
-            const canvasHeight = Math.max(200, order.length * 60);  // Each item adds 60px to the height
-            document.getElementById('canvas').style.minHeight = canvasHeight + 'px';
-            
-            // Update the iframe height for dynamic resizing in Streamlit
-            window.parent.postMessage({height: document.body.scrollHeight}, "*");
-            
+
             window.parent.postMessage({type: 'canvas_order', order: order}, '*');
         }
 
-        // Set the initial iframe height on load
         window.addEventListener('load', function() {
+            updateCanvasHeight();
             window.parent.postMessage({height: document.body.scrollHeight}, "*");
         });
     </script>
 """
 
-# Render drag-and-drop interface in Streamlit with large height
-components.html(sortable_html, height=1200)
+# Render the HTML/JS interface
+components.html(sortable_html, height=1000)
 
 # Initialize the session state to store the survey structure if not present
 if 'survey_structure' not in st.session_state:
@@ -141,11 +139,8 @@ if 'survey_structure' not in st.session_state:
 
 # Function to handle messages from the drag-and-drop interface
 def handle_message():
-    # Try capturing the canvas order from URL parameters
     message = st.experimental_get_query_params().get("canvas_order")
     if message:
-        st.session_state.survey_structure = json.loads(message[0])  # Save the order in session_state
+        st.session_state.survey_structure = json.loads(message[0]) 
 
-# Handle messages (to capture the drag-and-drop order)
 handle_message()
-
