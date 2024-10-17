@@ -70,30 +70,25 @@ sortable_html = """
             document.querySelectorAll('#canvas li').forEach(function(el) {
                 order.push(el.id);
             });
-            window.parent.postMessage({type: 'canvas_order', order: order}, '*');
+            // Post the canvas order to the parent document (Streamlit)
+            window.parent.postMessage(JSON.stringify({type: 'canvas_order', order: order}), '*');
         }
     </script>
 """
 
-# Render drag-and-drop interface in Streamlit
-components.html(sortable_html, height=400, allow_post_message=True, key="drag_drop_survey")
+# Render the drag-and-drop interface
+components.html(sortable_html, height=400, key="drag_drop_survey")
 
-# Initialize the session state to store the survey structure if not present
+# Initialize session state for storing survey structure
 if 'survey_structure' not in st.session_state:
     st.session_state.survey_structure = []
 
-# Function to handle messages from the drag-and-drop interface
-def handle_message():
-    # Capture the canvas order from the frontend
-    message = st.experimental_get_query_params()
-    message = st.session_state.get('drag_drop_survey')
+# Capture messages from frontend
+message = st.experimental_get_query_params().get('canvas_order', None)
 
-    if message:
-        if "canvas_order" in message:
-            st.session_state.survey_structure = json.loads(message["canvas_order"])  # Save the order in session_state
+# Process the canvas order and update the session state
+if message:
+    st.session_state.survey_structure = json.loads(message[0])
 
-# Handle messages (to capture the drag-and-drop order)
-handle_message()
-
-# Display the current survey structure
+# Display current survey structure
 st.write("Current Survey Structure:", st.session_state.survey_structure)
