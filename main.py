@@ -264,39 +264,74 @@ handle_message()
 
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
-    # Generate Python code based on `st.session_state.survey_structure`
-    generated_code = f"""
-import streamlit as st
+    # Initialize the generated code string
+    generated_code = ""
 
-# Survey title and description
-st.title("{survey_title}")
-st.write("{survey_description}")
+    # Number of components plus one for the introduction page
+    total_number_pages = len(st.session_state.survey_structure) + 1
 
-# Initialize session state for responses
+    # Add the initial imports and global variables
+    generated_code += """import streamlit as st
+import requests
+import json
+
+# Global variables
+total_number_pages = {}
+placeholder_buttons = None
+
+""".format(total_number_pages)
+
+    # Iterate over the survey components to create the respective questions
+    question_index = 1
+    for component in st.session_state.survey_structure:
+        if component['type'] == 'text_input':
+            generated_code += """# Page {}
+st.markdown("### Question {}: {}".format({}, "Your Question Here"))
+if st.button('Next'):
+    st.session_state["current_page"] += 1
+    st.rerun()
+""".format(question_index, question_index, "Your Question Here")  # Placeholder for text question
+            question_index += 1
+
+        elif component['type'] == 'radio':
+            options = component.get('options', [])
+            options_str = ', '.join(f'"{option}"' for option in options)
+            generated_code += """# Page {}
+q{}_radio_options = [{}]
+st.radio(label="Question {}: {}", options=q{}_radio_options, key='Q{}')
+if st.button('Next'):
+    st.session_state["current_page"] += 1
+    st.rerun()
+""".format(question_index, question_index, options_str, question_index, "Your Question Here", question_index, question_index)
+            question_index += 1
+
+        elif component['type'] == 'slider':
+            generated_code += """# Page {}
+st.slider(label="Question {}: {}", min_value=0, max_value=100, key='Q{}')
+if st.button('Next'):
+    st.session_state["current_page"] += 1
+    st.rerun()
+""".format(question_index, question_index, "Your Slider Question Here", question_index)
+            question_index += 1
+
+    # Add the initial title and description
+    generated_code += """
+# Changing the App title
+st.set_page_config(page_title="IPFS-Based Survey")
+
+# Page title
+st.title("GET TITLE FROM NEW TEXT BOX")
+
+# The following code centralizes all the buttons
+st.markdown("<style>.row-widget.stButton {text-align: center;}</style>", unsafe_allow_html=True)
+
+# The following code helps with the font size of text labels
+st.markdown("<style>.big-font {font-size:24px;}</style>", unsafe_allow_html=True)
+
+# Initialize state
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = 1
-
-    """
-
-    for idx, component in enumerate(st.session_state.survey_structure):
-        if component["type"] == "text_input":
-            generated_code += f"""
-# Page {idx + 1} - Text Input
-if st.session_state["current_page"] == {idx + 1}:
-    st.text_input("{component['question']}")
-            """
-        elif component["type"] == "radio":
-            generated_code += f"""
-# Page {idx + 1} - Multiple Choice
-if st.session_state["current_page"] == {idx + 1}:
-    st.radio("{component['question']}", options={component['options']})
-            """
-        elif component["type"] == "slider":
-            generated_code += f"""
-# Page {idx + 1} - Slider
-if st.session_state["current_page"] == {idx + 1}:
-    st.slider("{component['question']}", min_value={component['min_value']}, max_value={component['max_value']})
-            """
+""".format()
 
     # Display the generated code
     st.code(generated_code, language="python")
