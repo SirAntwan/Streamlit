@@ -152,6 +152,7 @@ sortable_html = """
                         // Remove the option when clicked
                         removeButton.addEventListener('click', function () {
                             optionsContainer.removeChild(optionContainer);
+                            optionCount =- 1;
                         });
 
                         optionContainer.appendChild(newOptionBox);
