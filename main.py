@@ -52,7 +52,7 @@ if "current_page" not in st.session_state:
 # Page 1: Survey Introduction
 if st.session_state["current_page"] == 1:
 
-    st.markdown(''<p class="big-font">{description}</p>'', unsafe_allow_html=True)
+    st.markdown('''<p class="big-font">{description}</p>''', unsafe_allow_html=True)
 
     if st.button('Next'):
         st.session_state["current_page"] += 1
@@ -79,7 +79,7 @@ elif st.session_state["current_page"] == {idx}:
              on_change=radio_change, 
              args=(q{idx - 1}_radio_options, "Q{idx - 1}", "Q{idx - 1}_radio",))
 
-    st.markdown(''<style> div[class*="stRadio"] > label > div[data-testid="stMarkdownContainer"] > p {{font-size: 24px;}}</style> <br><br>'', unsafe_allow_html=True)
+    st.markdown('''<style> div[class*="stRadio"] > label > div[data-testid="stMarkdownContainer"] > p {{font-size: 24px;}}</style> <br><br>''', unsafe_allow_html=True)
     placeholder = st.empty()
 
     col1, col2 = st.columns(2)
