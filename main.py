@@ -58,7 +58,7 @@ sortable_html = """
             background-color: #0056b3;
         }
 
-        .remove-option-btn {
+        .remove-option-btn, .remove-component-btn {
             background-color: #dc3545;
             color: white;
             border: none;
@@ -66,7 +66,7 @@ sortable_html = """
             cursor: pointer;
         }
 
-        .remove-option-btn:hover {
+        .remove-option-btn:hover, .remove-component-btn:hover {
             background-color: #c82333;
         }
     </style>
@@ -120,6 +120,16 @@ sortable_html = """
                 newItem.style.border = "1px solid #ccc";
                 newItem.style.marginBottom = "5px";
 
+                // Add a "Remove Component" button to delete the whole component
+                var removeComponentButton = document.createElement('button');
+                removeComponentButton.textContent = 'Remove Component';
+                removeComponentButton.classList.add('remove-component-btn');
+                removeComponentButton.style.marginTop = '10px';
+                
+                removeComponentButton.addEventListener('click', function () {
+                    canvasEl.removeChild(newItem);  // Remove the entire component
+                });
+
                 // Add a text box for the Text Question component
                 if (newItem.id.startsWith('text_input')) {
                     var inputBox = document.createElement('input');
@@ -152,7 +162,7 @@ sortable_html = """
                         // Remove the option when clicked
                         removeButton.addEventListener('click', function () {
                             optionsContainer.removeChild(optionContainer);
-                            optionCount =- 1;
+                            optionCount -= 1;  // Reduce the option count by 1
                         });
 
                         optionContainer.appendChild(newOptionBox);
@@ -194,6 +204,9 @@ sortable_html = """
                         optionsContainer.appendChild(newOptionContainer);
                     });
                 }
+
+                // Append the Remove Component button to the new item
+                newItem.appendChild(removeComponentButton);
 
                 updateCanvas();
             },
