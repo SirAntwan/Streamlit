@@ -149,5 +149,3 @@ def handle_message():
 # Handle messages (to capture the drag-and-drop order)
 handle_message()
 
-# Display current survey structure for debugging
-st.write("Current Survey Structure:", st.session_state.survey_structure)
