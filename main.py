@@ -5,18 +5,167 @@ import json
 # Set the page to wide mode to ensure the full width of the screen is used
 st.set_page_config(layout="wide")
 
-# Initialize session state for title and description
-if 'survey_title' not in st.session_state:
-    st.session_state.survey_title = ""
-if 'survey_description' not in st.session_state:
-    st.session_state.survey_description = ""
+# Function to generate Python code for the survey
+def generate_python_code(title, description, survey_elements):
+    # Start of the Python code template
+    code = f'''
+import streamlit as st
+import requests
+import json
 
-# Text input for Survey Title
-st.title("Survey Builder")
-st.text_input("Survey Title", key='survey_title', placeholder="Enter the title of the survey")
+# Global variables
+total_number_pages = {len(survey_elements) + 1}
+placeholder_buttons = None
 
-# Text input for Survey Description
-st.text_area("Survey Description", key='survey_description', placeholder="Enter a description of the survey")
+# Function that records radio element changes 
+def radio_change(element, state, key):
+    st.session_state[state] = element.index(st.session_state[key])  # Setting previously selected option
+
+# Function that disables the last button while data is uploaded to IPFS 
+def button_disable():
+    st.session_state["disabled"] = True
+
+# Changing the App title
+st.set_page_config(page_title="IPFS-Based Survey")
+
+# Page title
+st.title("{title}")
+
+# The following code centralizes all the buttons
+st.markdown("<style>.row-widget.stButton {{text-align: center;}}</style>", unsafe_allow_html=True)
+
+# The following code helps with the font size of text labels
+st.markdown("<style>.big-font {{font-size:24px;}}</style>", unsafe_allow_html=True)  
+
+# Initialize state
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = 1
+    st.session_state["disabled"] = False
+    '''
+    
+    # Add session state for each survey element
+    for idx, element in enumerate(survey_elements):
+        code += f'    st.session_state["Q{idx + 1}"] = None\n'
+
+    # Page 1: Survey description
+    code += f'''
+# Page 1: Survey Introduction
+if st.session_state["current_page"] == 1:
+
+    st.markdown(''<p class="big-font">{description}</p>'', unsafe_allow_html=True)
+
+    if st.button('Next'):
+        st.session_state["current_page"] += 1
+        st.rerun()
+
+    # Progress bar
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+    '''
+
+    # Generate code for each survey element on subsequent pages
+    for idx, element in enumerate(survey_elements, start=2):
+        if element["type"] == "radio":
+            options = json.dumps(element["options"])
+            code += f'''
+# Page {idx}: Multiple Choice (Radio) Question
+elif st.session_state["current_page"] == {idx}:
+
+    q{idx - 1}_radio_options = {options}
+
+    st.radio(label="{element['question']}", 
+             options=q{idx - 1}_radio_options, 
+             index=None if st.session_state["Q{idx - 1}"] == None else st.session_state["Q{idx - 1}"],
+             key="Q{idx - 1}_radio", 
+             on_change=radio_change, 
+             args=(q{idx - 1}_radio_options, "Q{idx - 1}", "Q{idx - 1}_radio",))
+
+    st.markdown(''<style> div[class*="stRadio"] > label > div[data-testid="stMarkdownContainer"] > p {{font-size: 24px;}}</style> <br><br>'', unsafe_allow_html=True)
+    placeholder = st.empty()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Back'):
+            st.session_state["current_page"] -= 1
+            st.rerun()
+
+    with col2:
+        if st.button('Next'):
+            if st.session_state["Q{idx - 1}"] != None:
+                st.session_state["current_page"] += 1
+                st.rerun()
+            else:
+                with placeholder.container():
+                    st.warning("Please answer all the questions on this page.", icon="⚠️")
+
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+            '''
+
+        elif element["type"] == "text_input":
+            code += f'''
+# Page {idx}: Text Input Question
+elif st.session_state["current_page"] == {idx}:
+
+    st.text_input(label="{element['question']}", 
+                  value=None if st.session_state["Q{idx - 1}"] == None else st.session_state["Q{idx - 1}"],
+                  key="Q{idx - 1}_input")
+
+    placeholder = st.empty()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Back'):
+            st.session_state["current_page"] -= 1
+            st.rerun()
+
+    with col2:
+        if st.button('Next'):
+            if st.session_state["Q{idx - 1}"] != None:
+                st.session_state["current_page"] += 1
+                st.rerun()
+            else:
+                with placeholder.container():
+                    st.warning("Please answer all the questions on this page.", icon="⚠️")
+
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+            '''
+
+        elif element["type"] == "slider":
+            min_val, max_val = element["min"], element["max"]
+            code += f'''
+# Page {idx}: Slider Question
+elif st.session_state["current_page"] == {idx}:
+
+    st.slider(label="{element['question']}", 
+              min_value={min_val}, max_value={max_val}, 
+              value=None if st.session_state["Q{idx - 1}"] == None else st.session_state["Q{idx - 1}"],
+              key="Q{idx - 1}_slider")
+
+    placeholder = st.empty()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Back'):
+            st.session_state["current_page"] -= 1
+            st.rerun()
+
+    with col2:
+        if st.button('Submit'):
+            if st.session_state["Q{idx - 1}"] != None:
+                st.success("Thank you for your feedback!")
+                # Code for submission and IPFS upload can go here
+            else:
+                with placeholder.container():
+                    st.warning("Please answer all the questions on this page.", icon="⚠️")
+
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+            '''
+
+    return code
+
+
+# Add a text box for survey title and description
+title = st.text_input("Survey Title", value="My Survey")
+description = st.text_area("Survey Description", value="This is a description for the survey.")
 
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = """
@@ -111,196 +260,117 @@ sortable_html = """
             <h3>Drag and Drop Survey Elements:</h3>
             <ul id="items" style="list-style: none; padding-left: 0;">
                 <li id="text_input" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Text Question</li>
-                <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice (Radio)</li>
+                <li id="radio" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Multiple Choice</li>
                 <li id="slider" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 5px;">Slider Question</li>
             </ul>
         </div>
 
         <div class="right-column">
-            <h3>Survey Canvas:</h3>
+            <h3>Survey Preview</h3>
             <ul id="canvas"></ul>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script>
-        var itemsEl = document.getElementById('items');
-        var canvasEl = document.getElementById('canvas');
+        var counter = 0;
 
-        // Make the components list draggable but not sortable
-        new Sortable(itemsEl, {
-            animation: 150,
-            sort: false,
-            group: {
-                name: 'shared',  
-                pull: 'clone',  
-                put: false      
-            },
+        // Make the items draggable to the canvas
+        $("#items li").draggable({
+            helper: "clone"
         });
 
-        // Make the canvas list also draggable and sortable
-        new Sortable(canvasEl, {
-            animation: 150,
-            group: {
-                name: 'shared',  
-                pull: false,     
-                put: true        
-            },
-            onAdd: function (evt) {
-                var newItem = evt.item;
-                newItem.id = evt.item.id + '_' + Date.now(); // Unique ID
-
-                // Ensure it doesn't appear in the original list again
-                newItem.style.padding = "10px";
-                newItem.style.border = "1px solid #ccc";
-                newItem.style.marginBottom = "5px";
-                newItem.classList.add('component-container');  // To ensure proper layout
-
-                // Add a "Remove Component" button as 'X' to delete the whole component
-                var removeComponentButton = document.createElement('button');
-                removeComponentButton.textContent = 'X';
-                removeComponentButton.classList.add('remove-component-btn');
-
-                removeComponentButton.addEventListener('click', function () {
-                    canvasEl.removeChild(newItem);  // Remove the entire component
-                });
-
-                // Add a text box for the Text Question component
-                if (newItem.id.startsWith('text_input')) {
-                    var inputBox = document.createElement('input');
-                    inputBox.type = 'text';
-                    inputBox.placeholder = 'Type your question here...';
-                    inputBox.classList.add('input-box');
-                    newItem.appendChild(inputBox);
+        // Make the canvas a droppable area
+        $("#canvas").droppable({
+            accept: "#items li",
+            drop: function(event, ui) {
+                var type = ui.helper.attr("id");
+                var id = counter++;
+                if (type === "text_input") {
+                    $(this).append(
+                        '<li class="component-container" data-type="text_input" data-id="' + id + '">' +
+                        '<label for="question">Text Question:</label>' +
+                        '<input type="text" class="input-box question" name="question" data-id="' + id + '" />' +
+                        '<button class="remove-component-btn" onclick="$(this).closest(\'li\').remove();">X</button>' +
+                        '</li>'
+                    );
+                } else if (type === "radio") {
+                    $(this).append(
+                        '<li class="component-container" data-type="radio" data-id="' + id + '">' +
+                        '<label for="question">Multiple Choice Question:</label>' +
+                        '<input type="text" class="input-box question" name="question" data-id="' + id + '" placeholder="Enter your question" />' +
+                        '<div class="options-container">' +
+                        '<input type="text" class="input-box option" placeholder="Option 1" data-id="' + id + '" />' +
+                        '<input type="text" class="input-box option" placeholder="Option 2" data-id="' + id + '" />' +
+                        '</div>' +
+                        '<button class="add-option-btn" onclick="addOption(this);">Add Option</button>' +
+                        '<button class="remove-component-btn" onclick="$(this).closest(\'li\').remove();">X</button>' +
+                        '</li>'
+                    );
+                } else if (type === "slider") {
+                    $(this).append(
+                        '<li class="component-container" data-type="slider" data-id="' + id + '">' +
+                        '<label for="question">Slider Question:</label>' +
+                        '<input type="text" class="input-box question" name="question" data-id="' + id + '" placeholder="Enter your question" />' +
+                        '<input type="number" class="input-box min-value" name="min_value" placeholder="Min value" data-id="' + id + '" />' +
+                        '<input type="number" class="input-box max-value" name="max_value" placeholder="Max value" data-id="' + id + '" />' +
+                        '<button class="remove-component-btn" onclick="$(this).closest(\'li\').remove();">X</button>' +
+                        '</li>'
+                    );
                 }
-
-                // Add functionality for the Multiple Choice (Radio) component
-                if (newItem.id.startsWith('radio')) {
-                    var optionCount = 2; // Initial options are 2
-                    
-                    // Function to create a new option box with remove button
-                    function createOptionBox(optionNumber) {
-                        var optionContainer = document.createElement('div');
-                        optionContainer.style.display = 'flex';
-                        optionContainer.style.alignItems = 'center';
-                        
-                        var newOptionBox = document.createElement('input');
-                        newOptionBox.type = 'text';
-                        newOptionBox.placeholder = 'Option ' + optionNumber;
-                        newOptionBox.classList.add('input-box');
-                        
-                        var removeButton = document.createElement('button');
-                        removeButton.textContent = 'Remove';
-                        removeButton.classList.add('remove-option-btn');
-                        removeButton.style.marginLeft = '10px';
-                        
-                        // Remove the option when clicked
-                        removeButton.addEventListener('click', function () {
-                            optionsContainer.removeChild(optionContainer);
-                            optionCount -= 1;  // Reduce the option count by 1
-                        });
-
-                        optionContainer.appendChild(newOptionBox);
-                        optionContainer.appendChild(removeButton);
-
-                        return optionContainer;
-                    }
-
-                    // Add a text box for the question
-                    var questionBox = document.createElement('input');
-                    questionBox.type = 'text';
-                    questionBox.placeholder = 'Type your multiple choice question...';
-                    questionBox.classList.add('input-box');
-
-                    // Container for options
-                    var optionsContainer = document.createElement('div');
-
-                    // Initial options with remove buttons
-                    var option1Container = createOptionBox(1);
-                    var option2Container = createOptionBox(2);
-                    
-                    optionsContainer.appendChild(option1Container);
-                    optionsContainer.appendChild(option2Container);
-
-                    // Add a button to add more options dynamically
-                    var addButton = document.createElement('button');
-                    addButton.textContent = 'Add Option';
-                    addButton.classList.add('add-option-btn');
-
-                    // Append the question box, options container, and add button to the new item
-                    newItem.appendChild(questionBox);
-                    newItem.appendChild(optionsContainer);
-                    newItem.appendChild(addButton);
-
-                    // Add event listener to the button to add new options dynamically
-                    addButton.addEventListener('click', function () {
-                        optionCount += 1;
-                        var newOptionContainer = createOptionBox(optionCount);  // Create new option with remove button
-                        optionsContainer.appendChild(newOptionContainer);
-                    });
-                }
-
-                // Add functionality for the Slider Question component
-                if (newItem.id.startsWith('slider')) {
-                    // Add a text box for the question
-                    var sliderQuestionBox = document.createElement('input');
-                    sliderQuestionBox.type = 'text';
-                    sliderQuestionBox.placeholder = 'Type your slider question...';
-                    sliderQuestionBox.classList.add('input-box');
-
-                    // Add labels for the slider
-                    var minLabelBox = document.createElement('input');
-                    minLabelBox.type = 'text';
-                    minLabelBox.placeholder = 'Min Label';
-                    minLabelBox.classList.add('input-box');
-
-                    var maxLabelBox = document.createElement('input');
-                    maxLabelBox.type = 'text';
-                    maxLabelBox.placeholder = 'Max Label';
-                    maxLabelBox.classList.add('input-box');
-
-                    // Add input boxes for min and max values
-                    var minValueBox = document.createElement('input');
-                    minValueBox.type = 'number';
-                    minValueBox.placeholder = 'Min Value (Default 0)';
-                    minValueBox.classList.add('input-box');
-
-                    var maxValueBox = document.createElement('input');
-                    maxValueBox.type = 'number';
-                    maxValueBox.placeholder = 'Max Value (Default 0)';
-                    maxValueBox.classList.add('input-box');
-
-                    // Append the question box, labels, and values to the new item
-                    newItem.appendChild(sliderQuestionBox);
-                    newItem.appendChild(minLabelBox);
-                    newItem.appendChild(maxLabelBox);
-                    newItem.appendChild(minValueBox);
-                    newItem.appendChild(maxValueBox);
-                }
-
-                // Append the Remove Component button ('X') to the new item
-                newItem.appendChild(removeComponentButton);
-                canvasEl.appendChild(newItem);
-
-                // Send the updated canvas content back to Streamlit
-                const canvasContent = JSON.stringify(Array.from(canvasEl.children).map(item => item.innerHTML));
-                window.parent.postMessage({ canvas: canvasContent }, "*");
             }
         });
+
+        // Add new options for radio buttons
+        function addOption(button) {
+            var optionsContainer = $(button).prev(".options-container");
+            var optionCount = optionsContainer.children(".option").length + 1;
+            optionsContainer.append('<input type="text" class="input-box option" placeholder="Option ' + optionCount + '" />');
+        }
+
+        // Function to collect the survey data in JSON format
+        window.collectSurveyData = function() {
+            var surveyElements = [];
+            $("#canvas li").each(function() {
+                var element = {};
+                element.type = $(this).data("type");
+                element.id = $(this).data("id");
+
+                if (element.type === "text_input") {
+                    element.question = $(this).find(".question").val();
+                } else if (element.type === "radio") {
+                    element.question = $(this).find(".question").val();
+                    element.options = [];
+                    $(this).find(".option").each(function() {
+                        element.options.push($(this).val());
+                    });
+                } else if (element.type === "slider") {
+                    element.question = $(this).find(".question").val();
+                    element.min = $(this).find(".min-value").val();
+                    element.max = $(this).find(".max-value").val();
+                }
+
+                surveyElements.push(element);
+            });
+
+            return JSON.stringify(surveyElements);
+        };
     </script>
 """
 
-# Render the HTML/JS interface
-components.html(sortable_html, height=1000)
+# Embed the HTML in the Streamlit app
+components.html(sortable_html, height=700)
 
-# Initialize the session state to store the survey structure if not present
-if 'survey_structure' not in st.session_state:
-    st.session_state.survey_structure = []
+# Button to generate the Python code
+if st.button("Generate Python Code"):
+    # Collect the survey data
+    survey_data = components.html("return collectSurveyData();")
 
-# Function to handle messages from the drag-and-drop interface
-def handle_message():
-    message = st.experimental_get_query_params().get("canvas_order")
-    if message:
-        st.session_state.survey_structure = json.loads(message[0])
+    if survey_data:
+        # Generate Python code based on the collected survey data
+        survey_elements = json.loads(survey_data)
+        python_code = generate_python_code(title, description, survey_elements)
 
-handle_message()
+        # Display the generated code
+        st.code(python_code, language="python")
