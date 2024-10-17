@@ -101,8 +101,9 @@ def generate_survey():
     for item in st.session_state.survey_structure:
         if item.startswith('text_input'):
             question_key = f"question_{item}"
-            question_text = st.session_state.questions.get(question_key, "Enter your question:")
-            st.text_input(question_text, key=question_key)
+            if question_key not in st.session_state.questions:
+                st.session_state.questions[question_key] = ""
+            st.text_input("Write your question:", key=question_key)  # This adds the text box for the question
         elif item.startswith('radio'):
             st.radio("Choose your favorite fruit:", ["Apple", "Banana", "Orange"])
         elif item.startswith('slider'):
@@ -133,4 +134,3 @@ if st.button("Generate Python Code"):
     code = generate_code()
     st.code(code, language='python')
     st.download_button("Download Python Code", code, file_name="survey.py")
-
