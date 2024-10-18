@@ -147,19 +147,17 @@ sortable_html = f"""
             onAdd: function (evt) {{
                 var newItem = evt.item;
                 newItem.id = evt.item.id + '_' + Date.now(); // Unique ID
-
-                newItem.style.padding = "10px";
-                newItem.style.border = "1px solid #ccc";
-                newItem.style.marginBottom = "5px";
-                newItem.classList.add('component-container');
-
+                
+                // Add remove button
                 var removeComponentButton = document.createElement('button');
                 removeComponentButton.textContent = 'X';
                 removeComponentButton.classList.add('remove-component-btn');
                 removeComponentButton.addEventListener('click', function () {{
                     canvasEl.removeChild(newItem);
                     updateComponentCount(); // Update the count when an item is removed
+                    sendComponentCountToStreamlit(); // Send the updated count to Streamlit
                 }});
+
 
                 // Add component-specific elements
                 if (newItem.id.startsWith('text_input')) {{
@@ -273,10 +271,34 @@ sortable_html = f"""
                 newItem.appendChild(removeComponentButton);
                 canvasEl.appendChild(newItem);
                 updateComponentCount(); // Update the count when an item is added
+                sendComponentCountToStreamlit
             }}
         }});
+
+        function sendComponentCountToStreamlit() {{
+            var count = canvasEl.children.length;
+            const message = JSON.stringify({{ component_count: count }});
+            const queryString = new URLSearchParams({{ message: message }}).toString();
+            const url = window.location.href.split('?')[0] + '?' + queryString;
+            window.location.href = url;
+        }}
     </script>
 """
+
+# Function to handle messages from the drag-and-drop interface
+def handle_message():
+    message = st.experimental_get_query_params().get('message', None)
+    if message:
+        # Parse the message and update session state
+        message_data = json.loads(message[0])
+        st.session_state['component_count'] = message_data.get('component_count', 0)
+
+# Call the handler to update survey structure and component count
+handle_message()
+
+# Display the current component count in Streamlit
+st.write(f"Current number of components: {st.session_state['component_count']}")
+
 
 # Render the HTML/JS interface
 components.html(sortable_html, height=1000)
