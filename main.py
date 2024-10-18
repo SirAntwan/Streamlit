@@ -16,7 +16,79 @@ survey_description = st.text_area("Survey Description", "Enter a description for
 # Define the HTML and JavaScript for the drag-and-drop interface
 sortable_html = f"""
     <style>
-        /* Your existing CSS here */
+        body {{
+            margin: 0;
+            padding: 0;
+        }}
+        .left-column {{
+            width: 20%;
+            border-right: 1px solid #ccc;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            overflow-y: auto;
+        }}
+        .right-column {{
+            margin-left: 20%;  
+            padding-left: 20px;
+        }}
+        #canvas {{
+            list-style: none;
+            padding-left: 0;
+            border: 1px dashed #ccc;
+            min-height: 200px;
+            transition: all 0.3s ease;
+        }}
+        .input-box {{
+            width: 80%;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            display: block;
+        }}
+        .add-option-btn {{
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }}
+        .add-option-btn:hover {{
+            background-color: #0056b3;
+        }}
+        .remove-option-btn {{
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }}
+        .remove-option-btn:hover {{
+            background-color: #c82333;
+        }}
+        .remove-component-btn {{
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+        }}
+        .remove-component-btn:hover {{
+            background-color: #c82333;
+        }}
+        .component-container {{
+            position: relative;
+            padding-right: 40px;
+        }}
     </style>
 
     <div>
@@ -99,12 +171,104 @@ sortable_html = f"""
                 }}
 
                 if (newItem.id.startsWith('radio')) {{
-                    // Similar logic for radio buttons
-                }}
+    // Create input for the question text
+    var questionBox = document.createElement('input');
+    questionBox.type = 'text';
+    questionBox.placeholder = 'Type your multiple choice question...';
+    questionBox.classList.add('input-box');
+    
+    // Create a container for options
+    var optionsContainer = document.createElement('div');
+    
+    // Function to create a single option box
+    function createOptionBox(optionNumber) {{
+        var optionContainer = document.createElement('div');
+        optionContainer.style.display = 'flex';
+        optionContainer.style.alignItems = 'center';
+        
+        var optionBox = document.createElement('input');
+        optionBox.type = 'text';
+        optionBox.placeholder = 'Option ' + optionNumber;
+        optionBox.classList.add('input-box');
+        
+        var removeButton = document.createElement('button');
+        removeButton.textContent = 'Remove';
+        removeButton.classList.add('remove-option-btn');
+        removeButton.style.marginLeft = '10px';
+        
+        removeButton.addEventListener('click', function () {{
+            optionsContainer.removeChild(optionContainer);
+     }});
+        
+        optionContainer.appendChild(optionBox);
+        optionContainer.appendChild(removeButton);
+        
+        return optionContainer;
+    }}
+
+    // Add initial options
+    var option1 = createOptionBox(1);
+    var option2 = createOptionBox(2);
+    optionsContainer.appendChild(option1);
+    optionsContainer.appendChild(option2);
+
+    // Button to add more options
+    var addOptionButton = document.createElement('button');
+    addOptionButton.textContent = 'Add Option';
+    addOptionButton.classList.add('add-option-btn');
+    
+    addOptionButton.addEventListener('click', function () {{
+        var optionCount = optionsContainer.children.length + 1;
+        var newOption = createOptionBox(optionCount);
+        optionsContainer.appendChild(newOption);
+    }});
+
+    // Append the question box, options container, and add button to the new item
+    newItem.appendChild(questionBox);
+    newItem.appendChild(optionsContainer);
+    newItem.appendChild(addOptionButton);
+}}
+
 
                 if (newItem.id.startsWith('slider')) {{
-                    // Similar logic for slider questions
+    // Create input for the slider question
+    var questionBox = document.createElement('input');
+    questionBox.type = 'text';
+    questionBox.placeholder = 'Type your slider question...';
+    questionBox.classList.add('input-box');
+    
+    // Create input for minimum label
+    var minLabelBox = document.createElement('input');
+    minLabelBox.type = 'text';
+    minLabelBox.placeholder = 'Min Label';
+    minLabelBox.classList.add('input-box');
+
+    // Create input for maximum label
+    var maxLabelBox = document.createElement('input');
+    maxLabelBox.type = 'text';
+    maxLabelBox.placeholder = 'Max Label';
+    maxLabelBox.classList.add('input-box');
+    
+    // Create input for minimum value
+    var minValueBox = document.createElement('input');
+    minValueBox.type = 'number';
+    minValueBox.placeholder = 'Min Value (Default 0)';
+    minValueBox.classList.add('input-box');
+
+    // Create input for maximum value
+    var maxValueBox = document.createElement('input');
+    maxValueBox.type = 'number';
+    maxValueBox.placeholder = 'Max Value (Default 100)';
+    maxValueBox.classList.add('input-box');
+
+    // Append the slider inputs to the new item
+    newItem.appendChild(questionBox);
+    newItem.appendChild(minLabelBox);
+    newItem.appendChild(maxLabelBox);
+    newItem.appendChild(minValueBox);
+    newItem.appendChild(maxValueBox);
                 }}
+
 
                 newItem.appendChild(removeComponentButton);
                 canvasEl.appendChild(newItem);
