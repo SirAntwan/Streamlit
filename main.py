@@ -290,18 +290,34 @@ st.write(f"Current number of components: {st.session_state['component_count']}")
 
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
-    # Generate Python code based on st.session_state.survey_structure
-    total_number_pages = len(st.session_state.survey_structure) + 1
+    # Generate Python code based on `st.session_state.survey_structure`
+    total_number_pages = {st.session_state['component_count']} + 1
     generated_code = f"""
 import streamlit as st
+import requests
+import json
+
 
 total_number_pages = {total_number_pages}
+placeholder_buttons = None
 
-st.set_page_config(page_title="Survey App")
+
+# Function that records radio element changes 
+def radio_change(element, state, key):
+    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
+
+# Function that disables the last button while data is uploaded to IPFS 
+def button_disable():
+    st.session_state["disabled"] = True
+
+# Changing the App title
+st.set_page_config(page_title="IPFS-Based Survey")
 
 # Survey title and description
 st.title("{survey_title}")
 st.write("{survey_description}")
-"""
+
+            """
+
     # Display the generated code
     st.code(generated_code, language="python")
