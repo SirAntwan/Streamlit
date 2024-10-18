@@ -291,7 +291,7 @@ st.write(f"Current number of components: {st.session_state['component_count']}")
 # Button to generate the code (code generation goes here)
 if st.button("Generate Survey Code"):
     # Generate Python code based on `st.session_state.survey_structure`
-    total_number_pages = {st.session_state['component_count']} + 1
+    total_number_pages = st.session_state['component_count'] + 1
     generated_code = f"""
 import streamlit as st
 import requests
