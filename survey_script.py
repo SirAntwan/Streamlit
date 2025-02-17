@@ -3,7 +3,7 @@ import requests
 import json
 import web3
 
-total_number_pages = 1
+total_number_pages = 3
 placeholder_buttons = None
 
 
@@ -40,9 +40,10 @@ if st.session_state["current_page"]  == 1:
 
     st.markdown("""<p class="big-font"></p>""", unsafe_allow_html=True)
 
+    st.video("") 
     placeholder = st.empty()
 
-    if st.button('Next'):
+    if st.button('Next', key='next_button_page_1'):
         all_answered = True
         if all_answered:
             st.session_state["current_page"] += 1
@@ -50,6 +51,50 @@ if st.session_state["current_page"]  == 1:
         else:
             with placeholder.container():
                 st.warning("Please answer all the questions on this page.", icon="⚠️")
+
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+
+
+elif st.session_state["current_page"] == 2:
+
+    placeholder = st.empty()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Back'):
+            st.session_state["current_page"] -= 1
+            st.rerun()
+    with col2:
+        if st.button('Next'):
+            all_answered = True
+            if all_answered:
+                st.session_state["current_page"] += 1
+                st.rerun()
+            else:
+                with placeholder.container():
+                    st.warning("Please answer all the questions on this page.", icon="⚠️")
+
+    st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
+
+
+elif st.session_state["current_page"] == 3:
+
+    placeholder = st.empty()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Back'):
+            st.session_state["current_page"] -= 1
+            st.rerun()
+    with col2:
+        if st.button('Next'):
+            all_answered = True
+            if all_answered:
+                st.session_state["current_page"] += 1
+                st.rerun()
+            else:
+                with placeholder.container():
+                    st.warning("Please answer all the questions on this page.", icon="⚠️")
 
     st.progress(st.session_state["current_page"]/total_number_pages, text="Progress")
 
