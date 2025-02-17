@@ -40,7 +40,6 @@ if st.session_state["current_page"]  == 1:
 
     st.markdown("""<p class="big-font"></p>""", unsafe_allow_html=True)
 
-    st.video("") 
     placeholder = st.empty()
 
     if st.button('Next', key='next_button_page_1'):
