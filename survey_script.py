@@ -97,7 +97,8 @@ if st.session_state["current_page"]  == 1:
 elif st.session_state["current_page"] == 2:
 
     st.image("http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcTF_OQ101nRiHil4w5295pqLf5M8axplaqmwCthHGgdqlu21bMsP8VmMdl4zkPUnW2pgcNWEWJyl-Y46P1J_d8") 
-    st.session_state["Q3"] = 5 
+    if st.session_state["Q3"] == None:
+       st.session_state["Q3"] = 5
     st.slider(label="This is a slider question that allows a numeric input between two numbers. This should appear on the second page.",min_value=0,max_value=10, 
                            value= st.session_state["Q3"], 
                            key = "Q3_slider",
