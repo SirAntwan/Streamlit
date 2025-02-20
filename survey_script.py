@@ -80,9 +80,9 @@ if st.session_state["current_page"]  == 1:
 
     if st.button('Next', key='next_button_page_1'):
         all_answered = True
-        if st.session_state["Q1"] == None:
+        if st.session_state["Q1"] == None or st.session_state["Q1"] == []:
             all_answered = False
-        if st.session_state["Q2"] == None:
+        if st.session_state["Q2"] == None or st.session_state["Q2"] == []:
             all_answered = False
         if all_answered:
             st.session_state["current_page"] += 1
@@ -97,8 +97,7 @@ if st.session_state["current_page"]  == 1:
 elif st.session_state["current_page"] == 2:
 
     st.image("http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcTF_OQ101nRiHil4w5295pqLf5M8axplaqmwCthHGgdqlu21bMsP8VmMdl4zkPUnW2pgcNWEWJyl-Y46P1J_d8") 
-    st.session_state["Q3"] = 5
-    st.slider(label="This is a slider question that allows a numeric input between two numbers. This should appear on the second page.",min_value=0,max_value=10, 
+    st.session_state["Q3"] = 5    st.slider(label="This is a slider question that allows a numeric input between two numbers. This should appear on the second page.",min_value=0,max_value=10, 
                            value= st.session_state["Q3"], 
                            key = "Q3_slider",
                            on_change = answer_change, 
@@ -126,7 +125,7 @@ elif st.session_state["current_page"] == 2:
     with col2:
         if st.button('Next'):
             all_answered = True
-            if st.session_state["Q3"] == None:
+            if st.session_state["Q3"] == None or st.session_state["Q3"] == []:
                 all_answered = False
             if st.session_state["Q4"] == None or st.session_state["Q4"] == []:
                 all_answered = False
@@ -183,11 +182,11 @@ elif st.session_state["current_page"] == 3:
     with col2:
         if st.button('Next'):
             all_answered = True
-            if st.session_state["Q5"] == None:
+            if st.session_state["Q5"] == None or st.session_state["Q5"] == []:
                 all_answered = False
-            if st.session_state["Q6"] == None:
+            if st.session_state["Q6"] == None or st.session_state["Q6"] == []:
                 all_answered = False
-            if st.session_state["Q7"] == None:
+            if st.session_state["Q7"] == None or st.session_state["Q7"] == []:
                 all_answered = False
             if all_answered:
                 st.session_state["current_page"] += 1
@@ -201,8 +200,8 @@ elif st.session_state["current_page"] == 3:
 
 elif st.session_state["current_page"] == 4:
 
-    st.slider(label="Happiness Scale",min_value=0,max_value=100, 
-                           value= 50 if st.session_state["Q8"] == None else st.session_state["Q8"], 
+    st.session_state["Q8"] = 50    st.slider(label="Happiness Scale",min_value=0,max_value=100, 
+                           value= st.session_state["Q8"], 
                            key = "Q8_slider",
                            on_change = answer_change, 
                            args = ("Q8", "Q8_slider",))
@@ -228,9 +227,9 @@ elif st.session_state["current_page"] == 4:
     with col2:
         if st.button('Next'):
             all_answered = True
-            if st.session_state["Q8"] == None:
+            if st.session_state["Q8"] == None or st.session_state["Q8"] == []:
                 all_answered = False
-            if st.session_state["Q9"] == None:
+            if st.session_state["Q9"] == None or st.session_state["Q9"] == []:
                 all_answered = False
             if all_answered:
                 st.session_state["current_page"] += 1
@@ -286,7 +285,7 @@ elif st.session_state["current_page"] == 6:
     with col2:
         if st.button('Next'):
             all_answered = True
-            if st.session_state["Q10"] == None:
+            if st.session_state["Q10"] == None or st.session_state["Q10"] == []:
                 all_answered = False
             if all_answered:
                 st.session_state["current_page"] += 1
