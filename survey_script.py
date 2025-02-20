@@ -98,12 +98,12 @@ elif st.session_state["current_page"] == 2:
 
     st.image("http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcTF_OQ101nRiHil4w5295pqLf5M8axplaqmwCthHGgdqlu21bMsP8VmMdl4zkPUnW2pgcNWEWJyl-Y46P1J_d8") 
     if st.session_state["Q3"] == None:
-       st.session_state["Q3"] = 5
+        st.session_state["Q3"] = 5
     st.slider(label="This is a slider question that allows a numeric input between two numbers. This should appear on the second page.",min_value=0,max_value=10, 
-                           value= st.session_state["Q3"], 
-                           key = "Q3_slider",
-                           on_change = answer_change, 
-                           args = ("Q3", "Q3_slider",))
+             value= st.session_state["Q3"], 
+             key = "Q3_slider",
+             on_change = answer_change, 
+             args = ("Q3", "Q3_slider",))
     st.markdown("""<style> div[class*="stSlider"] > label > div[data-testid="stMarkdownContainer"] > p {font-size: 18px;}</style> <br><br>""", unsafe_allow_html=True)
 
 
@@ -202,12 +202,13 @@ elif st.session_state["current_page"] == 3:
 
 elif st.session_state["current_page"] == 4:
 
-    st.session_state["Q8"] = 50
+    if st.session_state["Q8"] == None:
+        st.session_state["Q8"] = 50
     st.slider(label="Happiness Scale",min_value=0,max_value=100, 
-                           value= st.session_state["Q8"], 
-                           key = "Q8_slider",
-                           on_change = answer_change, 
-                           args = ("Q8", "Q8_slider",))
+             value= st.session_state["Q8"], 
+             key = "Q8_slider",
+             on_change = answer_change, 
+             args = ("Q8", "Q8_slider",))
     st.markdown("""<style> div[class*="stSlider"] > label > div[data-testid="stMarkdownContainer"] > p {font-size: 18px;}</style> <br><br>""", unsafe_allow_html=True)
 
 
