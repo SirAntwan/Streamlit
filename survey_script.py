@@ -19,7 +19,7 @@ def radio_change(element, state, key):
    st.session_state[state] = element.index(st.session_state[key]) # Setting previously selected option
 
 def multi_change(element, state, key):
-   st.session_state[state] = []
+   st.session_state[state] = None
    for selected_option in st.session_state[key]:
        st.session_state[state].append(selected_option)
 
